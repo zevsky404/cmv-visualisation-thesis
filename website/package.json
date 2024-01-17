@@ -1,0 +1,20 @@
+{
+  "name": "thread-visualisation",
+  "version": "1.0.0",
+  "description": "Visualisation of the delta threads of the CMV dataset",
+  "main": "src/js/thread-drawing.js",
+  "scripts": {
+    "test": "echo \"No tests available for this project\" && exit 1",
+    "start": "snowpack dev",
+    "tailwind": "npx tailwindcss -i ./src/css/input.css -o ./dist/tailwind_styles.css --watch"
+  },
+  "author": "Chris",
+  "license": "ISC",
+  "devDependencies": {
+    "snowpack": "^3.8.8",
+    "tailwindcss": "^3.3.5"
+  },
+  "dependencies": {
+    "d3": "^7.8.5"
+  }
+}
