@@ -558,10 +558,6 @@ video {
   flex-direction: column;
 }
 
-.justify-between {
-  justify-content: space-between;
-}
-
 .justify-evenly {
   justify-content: space-evenly;
 }

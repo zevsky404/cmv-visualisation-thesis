@@ -28,6 +28,17 @@ def insert_sequence(sequence: str, cluster: int):
         target_dict[sequence] = 1
 
 
+def write_sequence_csv(sequence_dict: dict, name: str):
+    filename = os.path.join(os.getcwd(), "website/output/sequences", name + ".csv")
+    sorted_dict = dict(sorted(sequence_dict.items(), key=lambda item: item[1], reverse=True))
+
+    with open(filename, "w") as sequence_file:
+        for sequence, frequency in sorted_dict.items():
+            sequence_file.write(f"{sequence}, {frequency}")
+            sequence_file.write("\n")
+        sequence_file.close()
+
+
 def process_thread(json_object, add_op=True):
     json_array = []
 
@@ -38,18 +49,18 @@ def process_thread(json_object, add_op=True):
 
         if entry["parent_id"] is None and not add_op:
             continue
-        elif entry["parent_id"] is None:
+        elif entry["parent_id"] is None and entry["cluster_sgt"] is not None:
             json_array.append({"id": entry["id"],
                                "cluster_type": "OP",
                                "cluster": int(entry["cluster_sgt"]),
                                "preds": entry["sequence"]})
-        else:
+        elif entry["parent_id"] is not None and entry["cluster_sgt"] is not None:
             json_array.append({"id": entry["id"],
                                "parent_id": entry["parent_id"],
                                "cluster_type": "C",
                                "cluster": int(entry["cluster_sgt"]),
                                "preds": entry["sequence"]})
-            insert_sequence("".join(entry["sequence"]), int(entry["cluster_sgt"]))
+            insert_sequence("".join(eval(entry["sequence"])), int(entry["cluster_sgt"]))
 
     return json_array
 
@@ -124,6 +135,12 @@ if __name__ == '__main__':
         json_file.write(json.dumps(big_array))
         json_file.close()
 
-    print(seen_sequence_overall)
+    # write_sequence_csv(seen_sequence_overall, "overall.csv")
+    # write_sequence_csv(seen_sequence_c1, "c1.csv")
+    # write_sequence_csv(seen_sequence_c2, "c2.csv")
+    # write_sequence_csv(seen_sequence_c3, "c3.csv")
+    # write_sequence_csv(seen_sequence_c4, "c4.csv")
+    # write_sequence_csv(seen_sequence_c5, "c5.csv")
+    # write_sequence_csv(seen_sequence_c6, "c6.csv")
 
 
