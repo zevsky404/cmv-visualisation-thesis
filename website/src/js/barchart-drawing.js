@@ -9,21 +9,22 @@ const colours = d3.scaleOrdinal()
     .range(["#d53e4f","#fc8d59","#fee08b","#e6f598","#99d594","#3288bd"])
     .domain(d3.extent([0,5]));
 
-// DRAWING SETUP
-let svg = d3.select("#main-container")
-    .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom + 35)
-    .append("g")
-        .attr("id", "padding")
-        .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-// DATA
-d3.csv("../output/sequences/c5.csv", d3.autoType).then( function (data) {
-    let xAxis = d3.scaleBand()
-        .range([0, width])
-        .domain(data.map((d) => { return d.sequence; } ))
-        .padding(0.4);
+function drawBarchart(filename) {
+    d3.csv(`../output/sequences/${filename}`, d3.autoType).then( function (data) {
+
+    // DRAWING SETUP
+    let svg = d3.select("#main-container")
+        .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom + 35)
+        .append("g")
+            .attr("id", "padding")
+            .attr("transform", `translate(${margin.left}, ${margin.top})`);
+        let xAxis = d3.scaleBand()
+            .range([0, width])
+            .domain(data.map((d) => { return d.sequence; } ))
+            .padding(0.4);
 
     svg.append("g")
         .attr("transform", `translate(0, ${height})`)
@@ -52,3 +53,12 @@ d3.csv("../output/sequences/c5.csv", d3.autoType).then( function (data) {
             .attr("fill", "#1D2B53");
     }
 )
+}
+
+drawBarchart("overall.csv")
+drawBarchart("c1.csv")
+drawBarchart("c2.csv")
+drawBarchart("c3.csv")
+drawBarchart("c4.csv")
+drawBarchart("c5.csv")
+drawBarchart("c6.csv")
