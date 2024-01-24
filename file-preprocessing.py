@@ -4,6 +4,7 @@ from datetime import datetime
 import shutil
 
 seen_ids = set()
+
 seen_sequence_overall = {}
 seen_sequence_c1 = {}
 seen_sequence_c2 = {}
@@ -11,6 +12,14 @@ seen_sequence_c3 = {}
 seen_sequence_c4 = {}
 seen_sequence_c5 = {}
 seen_sequence_c6 = {}
+
+seen_cons_occurrence_overall = {}
+seen_cons_occurrence_c1 = {}
+seen_cons_occurrence_c2 = {}
+seen_cons_occurrence_c3 = {}
+seen_cons_occurrence_c4 = {}
+seen_cons_occurrence_c5 = {}
+seen_cons_occurrence_c6 = {}
 
 
 def insert_sequence(sequence: str, cluster: int):
@@ -34,9 +43,36 @@ def write_sequence_csv(sequence_dict: dict, name: str):
 
     with open(filename, "w") as sequence_file:
         for sequence, frequency in sorted_dict.items():
-            sequence_file.write(f"{sequence}, {frequency}")
+            sequence_file.write(f"{sequence},{frequency}")
             sequence_file.write("\n")
         sequence_file.close()
+
+
+def count_consecutive_occurrences(preds: list, cluster: int):
+    for i in range(len(preds) - 1):
+        cons_occ = "".join([preds[i], preds[i+1]])
+        if cons_occ in seen_cons_occurrence_overall:
+            seen_cons_occurrence_overall[cons_occ] += 1
+        else:
+            seen_cons_occurrence_overall[cons_occ] = 1
+
+        dict_name = f"seen_cons_occurrence_c{cluster + 1}"
+        target_dict = globals().get(dict_name, None)
+
+        if cons_occ in target_dict:
+            target_dict[cons_occ] += 1
+        else:
+            target_dict[cons_occ] = 1
+
+
+def write_cons_occurrences(occ_dict: dict, name: str):
+    filename = os.path.join(os.getcwd(), "website/output/occurrences", name + ".csv")
+
+    with open(filename, "w") as occs_file:
+        for occ, amount in occ_dict.items():
+            occs_file.write(f"{occ[0]},{occ[1]},{amount}")
+            occs_file.write("\n")
+        occs_file.close()
 
 
 def process_thread(json_object, add_op=True):
@@ -61,6 +97,7 @@ def process_thread(json_object, add_op=True):
                                "cluster": int(entry["cluster_sgt"]),
                                "preds": entry["sequence"]})
             insert_sequence("".join(eval(entry["sequence"])), int(entry["cluster_sgt"]))
+            count_consecutive_occurrences(eval(entry["sequence"]), int(entry["cluster_sgt"]))
 
     return json_array
 
@@ -134,6 +171,14 @@ if __name__ == '__main__':
     with open(filename, "w") as json_file:
         json_file.write(json.dumps(big_array))
         json_file.close()
+
+    write_cons_occurrences(seen_cons_occurrence_overall, "occs_overall")
+    write_cons_occurrences(seen_cons_occurrence_c1, "occs_c1")
+    write_cons_occurrences(seen_cons_occurrence_c2, "occs_c2")
+    write_cons_occurrences(seen_cons_occurrence_c3, "occs_c3")
+    write_cons_occurrences(seen_cons_occurrence_c4, "occs_c4")
+    write_cons_occurrences(seen_cons_occurrence_c5, "occs_c5")
+    write_cons_occurrences(seen_cons_occurrence_c6, "occs_c6")
 
     # write_sequence_csv(seen_sequence_overall, "overall.csv")
     # write_sequence_csv(seen_sequence_c1, "c1.csv")

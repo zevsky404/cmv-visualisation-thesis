@@ -3,11 +3,7 @@ import * as d3 from "d3";
 
 const margin = {top: 30, right: 30, bottom: 70, left: 60},
     width = 1800 - margin.left - margin.right,
-    height = 700 - margin.top - margin.bottom;
-
-const colours = d3.scaleOrdinal()
-    .range(["#d53e4f","#fc8d59","#fee08b","#e6f598","#99d594","#3288bd"])
-    .domain(d3.extent([0,5]));
+    height = 800 - margin.top - margin.bottom;
 
 
 function drawBarchart(filename) {
@@ -16,13 +12,14 @@ function drawBarchart(filename) {
     // DRAWING SETUP
     let svg = d3.select("#main-container")
         .append("svg")
-            .attr("width", width + margin.left + margin.right)
+            .attr("width", width + margin.left + margin.right + 600)
             .attr("height", height + margin.top + margin.bottom + 35)
         .append("g")
             .attr("id", "padding")
             .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
         let xAxis = d3.scaleBand()
-            .range([0, width])
+            .range([0, width + 600])
             .domain(data.map((d) => { return d.sequence; } ))
             .padding(0.4);
 
