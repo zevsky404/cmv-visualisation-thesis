@@ -2,7 +2,7 @@
 import * as d3 from "d3";
 
 const margin = {top: 30, right: 30, bottom: 70, left: 60},
-    width = 1800 - margin.left - margin.right,
+    width = 1200 - margin.left - margin.right,
     height = 800 - margin.top - margin.bottom;
 
 
@@ -18,7 +18,15 @@ function drawBarchart(filename) {
             .attr("id", "padding")
             .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-        let xAxis = d3.scaleBand()
+    // title
+    svg.append("text")
+        .attr("x", -20)
+        .attr("y", -7)
+        .attr("text-anchor", "center")
+        .style("font-size", "22px")
+        .text(filename);
+
+    let xAxis = d3.scaleBand()
             .range([0, width + 600])
             .domain(data.map((d) => { return d.sequence; } ))
             .padding(0.4);
