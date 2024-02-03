@@ -21,6 +21,14 @@ seen_cons_occurrence_c4 = {}
 seen_cons_occurrence_c5 = {}
 seen_cons_occurrence_c6 = {}
 
+total_occurrences_overall = {"Value": 0, "Testimony": 0, "Rhetorical": 0, "Policy": 0, "Fact": 0}
+total_occurrences_c1 = {"Value": 0, "Testimony": 0, "Rhetorical": 0, "Policy": 0, "Fact": 0}
+total_occurrences_c2 = {"Value": 0, "Testimony": 0, "Rhetorical": 0, "Policy": 0, "Fact": 0}
+total_occurrences_c3 = {"Value": 0, "Testimony": 0, "Rhetorical": 0, "Policy": 0, "Fact": 0}
+total_occurrences_c4 = {"Value": 0, "Testimony": 0, "Rhetorical": 0, "Policy": 0, "Fact": 0}
+total_occurrences_c5 = {"Value": 0, "Testimony": 0, "Rhetorical": 0, "Policy": 0, "Fact": 0}
+total_occurrences_c6 = {"Value": 0, "Testimony": 0, "Rhetorical": 0, "Policy": 0, "Fact": 0}
+
 
 def insert_sequence(sequence: str, cluster: int):
     if sequence in seen_sequence_overall:
@@ -75,6 +83,26 @@ def write_cons_occurrences(occ_dict: dict, name: str):
         occs_file.close()
 
 
+def count_total_occurrences(comment_adus: list, cluster: int):
+    dict_name = f"total_occurrences_c{cluster + 1}"
+    target_dict = globals().get(dict_name, None)
+
+    for wordgroup in comment_adus:
+        new_adu = wordgroup["entity_group"]
+        total_occurrences_overall[new_adu] += 1
+        target_dict[new_adu] += 1
+
+
+def write_total_occurrences(total_dict: dict, name: str):
+    filename = os.path.join(os.getcwd(), "website/output/occurrences/total", name + ".csv")
+
+    with open(filename, "w") as total_file:
+        for adu_type, amount in total_dict.items():
+            total_file.write(f"{adu_type},{amount}")
+            total_file.write("\n")
+        total_file.close()
+
+
 def process_thread(json_object, add_op=True):
     json_array = []
 
@@ -98,6 +126,7 @@ def process_thread(json_object, add_op=True):
                                "preds": entry["sequence"]})
             insert_sequence("".join(eval(entry["sequence"])), int(entry["cluster_sgt"]))
             count_consecutive_occurrences(eval(entry["sequence"]), int(entry["cluster_sgt"]))
+            count_total_occurrences(eval(entry["preds"]), int(entry["cluster_sgt"]))
 
     return json_array
 
@@ -172,13 +201,21 @@ if __name__ == '__main__':
         json_file.write(json.dumps(big_array))
         json_file.close()
 
-    write_cons_occurrences(seen_cons_occurrence_overall, "occs_overall")
-    write_cons_occurrences(seen_cons_occurrence_c1, "occs_c1")
-    write_cons_occurrences(seen_cons_occurrence_c2, "occs_c2")
-    write_cons_occurrences(seen_cons_occurrence_c3, "occs_c3")
-    write_cons_occurrences(seen_cons_occurrence_c4, "occs_c4")
-    write_cons_occurrences(seen_cons_occurrence_c5, "occs_c5")
-    write_cons_occurrences(seen_cons_occurrence_c6, "occs_c6")
+    write_total_occurrences(total_occurrences_overall, "total_overall")
+    write_total_occurrences(total_occurrences_c1, "total_c1")
+    write_total_occurrences(total_occurrences_c2, "total_c2")
+    write_total_occurrences(total_occurrences_c3, "total_c3")
+    write_total_occurrences(total_occurrences_c4, "total_c4")
+    write_total_occurrences(total_occurrences_c5, "total_c5")
+    write_total_occurrences(total_occurrences_c6, "total_c6")
+
+    # write_cons_occurrences(seen_cons_occurrence_overall, "occs_overall")
+    # write_cons_occurrences(seen_cons_occurrence_c1, "occs_c1")
+    # write_cons_occurrences(seen_cons_occurrence_c2, "occs_c2")
+    # write_cons_occurrences(seen_cons_occurrence_c3, "occs_c3")
+    # write_cons_occurrences(seen_cons_occurrence_c4, "occs_c4")
+    # write_cons_occurrences(seen_cons_occurrence_c5, "occs_c5")
+    # write_cons_occurrences(seen_cons_occurrence_c6, "occs_c6")
 
     # write_sequence_csv(seen_sequence_overall, "overall.csv")
     # write_sequence_csv(seen_sequence_c1, "c1.csv")

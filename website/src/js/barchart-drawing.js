@@ -15,7 +15,7 @@ function drawBarchart(filename) {
             .attr("width", width + margin.left + margin.right + 600)
             .attr("height", height + margin.top + margin.bottom + 35)
         .append("g")
-            .attr("id", "padding")
+            .attr("class", "padding")
             .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
     // title
@@ -60,6 +60,66 @@ function drawBarchart(filename) {
 )
 }
 
+function drawPieChart(filename) {
+    d3.csv(`../output/occurrences/total/${filename}`, d3.autoType).then( function (data) {
+        let convertedData = {};
+        data.forEach((d) => {
+            convertedData[d.adu_type] = +d.amount;
+        });
+
+        const pieWidth = 450, pieHeight = 450, pieMargin = 40;
+
+        // DRAWING SETUP
+        const svg = d3.select("#main-container")
+            .append("svg")
+                .attr("width", pieWidth)
+                .attr("height", pieHeight)
+            .append("g")
+                .attr("class", "padding")
+                .attr("transform", `translate(${pieWidth/2}, ${pieHeight/2})`);
+
+        // title
+        svg.append("text")
+            .attr("x", -100)
+            .attr("y", -200)
+            .attr("text-anchor", "center")
+            .style("font-size", "22px")
+            .text(filename);
+
+        const radius = Math.min(pieWidth, pieHeight) / 2 - pieMargin;
+
+        const colour = d3.scaleOrdinal()
+            .range(["#23171b","#26bce1","#95fb51","#ff821d","#900c00"]);
+
+        const pie = d3.pie()
+            .value((d) => { return d[1]; });
+        const pieData = pie(Object.entries(convertedData))
+
+        const arcGenerator = d3.arc()
+            .innerRadius(0)
+            .outerRadius(radius);
+
+        console.log(arcGenerator)
+
+        svg.selectAll('pie-data')
+          .data(pieData)
+          .join('path')
+          .attr('d', arcGenerator)
+          .attr('fill', (d) => { return(colour(d.data[0])); })
+          .attr("stroke", "black")
+          .style("stroke-width", "2px")
+          .style("opacity", 0.7);
+
+        svg.selectAll('mySlices')
+          .data(pieData)
+          .join('text')
+          .text(function(d){ return d.data[0][0]; })
+          .attr("transform", function(d) { return `translate(${arcGenerator.centroid(d)})`; })
+          .style("text-anchor", "middle")
+          .style("font-size", 17)
+        });
+}
+
 drawBarchart("overall.csv")
 drawBarchart("c1.csv")
 drawBarchart("c2.csv")
@@ -67,3 +127,10 @@ drawBarchart("c3.csv")
 drawBarchart("c4.csv")
 drawBarchart("c5.csv")
 drawBarchart("c6.csv")
+drawPieChart("total_overall.csv")
+drawPieChart("total_c1.csv")
+drawPieChart("total_c2.csv")
+drawPieChart("total_c3.csv")
+drawPieChart("total_c4.csv")
+drawPieChart("total_c5.csv")
+drawPieChart("total_c6.csv")
