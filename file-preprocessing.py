@@ -29,6 +29,8 @@ total_occurrences_c4 = {"Value": 0, "Testimony": 0, "Rhetorical": 0, "Policy": 0
 total_occurrences_c5 = {"Value": 0, "Testimony": 0, "Rhetorical": 0, "Policy": 0, "Fact": 0}
 total_occurrences_c6 = {"Value": 0, "Testimony": 0, "Rhetorical": 0, "Policy": 0, "Fact": 0}
 
+first_last_order_dict = {}
+
 
 def insert_sequence(sequence: str, cluster: int):
     if sequence in seen_sequence_overall:
@@ -103,6 +105,29 @@ def write_total_occurrences(total_dict: dict, name: str):
         total_file.close()
 
 
+def count_first_last_cluster_order(first_cluster: str, last_cluster: str):
+    try:
+        order_name = f"{int(first_cluster) + 1},{int(last_cluster) + 1}"
+        if order_name in first_last_order_dict:
+            first_last_order_dict[order_name] += 1
+        else:
+            first_last_order_dict[order_name] = 1
+    except ValueError:
+        print("Incompatible types because cluster was None, skipped.")
+
+
+def write_first_last_cluster_order(first_last_dict: dict, name: str):
+    filename = os.path.join(os.getcwd(), "website/output/occurrences", name + ".csv")
+
+    with open(filename, "w") as fl_file:
+        fl_file.write("first_cluster,last_cluster,amount")
+        fl_file.write("\n")
+        for order, amount in first_last_dict.items():
+            fl_file.write(f"{order},{amount}")
+            fl_file.write("\n")
+        fl_file.close()
+
+
 def process_thread(json_object, add_op=True):
     json_array = []
 
@@ -128,6 +153,12 @@ def process_thread(json_object, add_op=True):
             count_consecutive_occurrences(eval(entry["sequence"]), int(entry["cluster_sgt"]))
             count_total_occurrences(eval(entry["preds"]), int(entry["cluster_sgt"]))
 
+    if len(json_object) == 2:
+        count_first_last_cluster_order(str(json_object[1]["cluster_sgt"]),
+                                       "same")
+    else:
+        count_first_last_cluster_order(str(json_object[1]["cluster_sgt"]),
+                                       str(json_object[len(json_object) - 1]["cluster_sgt"]))
     return json_array
 
 
@@ -197,9 +228,9 @@ if __name__ == '__main__':
 
     filename = os.path.join(os.getcwd(), "website/output", "process_" + datetime.now().strftime("%Y-%m-%d_%H:%M") + ".json")
 
-    with open(filename, "w") as json_file:
-        json_file.write(json.dumps(big_array))
-        json_file.close()
+    # with open(filename, "w") as json_file:
+    #     json_file.write(json.dumps(big_array))
+    #     json_file.close()
 
     write_total_occurrences(total_occurrences_overall, "total_overall")
     write_total_occurrences(total_occurrences_c1, "total_c1")
@@ -208,6 +239,8 @@ if __name__ == '__main__':
     write_total_occurrences(total_occurrences_c4, "total_c4")
     write_total_occurrences(total_occurrences_c5, "total_c5")
     write_total_occurrences(total_occurrences_c6, "total_c6")
+
+    write_first_last_cluster_order(first_last_order_dict, "first_last_order")
 
     # write_cons_occurrences(seen_cons_occurrence_overall, "occs_overall")
     # write_cons_occurrences(seen_cons_occurrence_c1, "occs_c1")

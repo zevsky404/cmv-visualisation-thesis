@@ -6,11 +6,14 @@ const margin = {top: 30, right: 30, bottom: 70, left: 60},
     height = 800 - margin.top - margin.bottom;
 
 
-function drawBarchart(filename) {
+function drawBarchart(filename, parentElementId) {
     d3.csv(`../output/sequences/${filename}`, d3.autoType).then( function (data) {
 
+    if (filename === "overall.csv") {
+        data = data.slice(0, 100);
+    }
     // DRAWING SETUP
-    let svg = d3.select("#main-container")
+    let svg = d3.select(`#${parentElementId}`)
         .append("svg")
             .attr("width", width + margin.left + margin.right + 600)
             .attr("height", height + margin.top + margin.bottom + 35)
@@ -56,11 +59,11 @@ function drawBarchart(filename) {
             .attr("width", xAxis.bandwidth())
             .attr("height", (d) => { return height - yAxis(d.frequency); })
             .attr("fill", "#1D2B53");
-    }
-)
+
+    });
 }
 
-function drawPieChart(filename) {
+function drawPieChart(filename, parentElementId) {
     d3.csv(`../output/occurrences/total/${filename}`, d3.autoType).then( function (data) {
         let convertedData = {};
         data.forEach((d) => {
@@ -70,7 +73,7 @@ function drawPieChart(filename) {
         const pieWidth = 450, pieHeight = 450, pieMargin = 40;
 
         // DRAWING SETUP
-        const svg = d3.select("#main-container")
+        const svg = d3.select(`#${parentElementId}`)
             .append("svg")
                 .attr("width", pieWidth)
                 .attr("height", pieHeight)
@@ -110,27 +113,41 @@ function drawPieChart(filename) {
           .style("stroke-width", "2px")
           .style("opacity", 0.7);
 
-        svg.selectAll('mySlices')
+        svg.selectAll('pie-data')
           .data(pieData)
           .join('text')
           .text(function(d){ return d.data[0][0]; })
           .attr("transform", function(d) { return `translate(${arcGenerator.centroid(d)})`; })
           .style("text-anchor", "middle")
           .style("font-size", 17)
+
         });
 }
 
-drawBarchart("overall.csv")
-drawBarchart("c1.csv")
-drawBarchart("c2.csv")
-drawBarchart("c3.csv")
-drawBarchart("c4.csv")
-drawBarchart("c5.csv")
-drawBarchart("c6.csv")
-drawPieChart("total_overall.csv")
-drawPieChart("total_c1.csv")
-drawPieChart("total_c2.csv")
-drawPieChart("total_c3.csv")
-drawPieChart("total_c4.csv")
-drawPieChart("total_c5.csv")
-drawPieChart("total_c6.csv")
+let newDiv;
+let promise = new Promise((resolve) => {
+    newDiv = document.createElement("div");
+    newDiv.id = `data-total`;
+    newDiv.className = "combined-data";
+    resolve();
+}).then(result => {
+    drawBarchart(`overall.csv`, newDiv.id);
+    drawPieChart(`total_overall.csv`, newDiv.id)
+    document.getElementById("main-container").appendChild(newDiv);
+})
+
+for (let i = 1; i <= 6; ++i) {
+    let newDiv;
+    let promise = new Promise((resolve) => {
+        newDiv = document.createElement("div");
+        newDiv.id = `data-cluster-${i}`;
+        newDiv.className = "combined-data";
+        resolve();
+    }).then(result => {
+        drawBarchart(`c${i}.csv`, newDiv.id);
+        drawPieChart(`total_c${i}.csv`, newDiv.id)
+        document.getElementById("main-container").appendChild(newDiv);
+    })
+}
+
+

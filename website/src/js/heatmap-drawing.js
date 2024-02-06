@@ -5,7 +5,7 @@ const margin = {top: 30, right: 30, bottom: 70, left: 60},
     width = 600 - margin.left - margin.right,
     height = 600 - margin.top - margin.bottom;
 
-function drawHeatmap(filename) {
+function drawHeatmap(groups, vars, groupName, varsName, amountName, filename) {
     d3.csv(`../output/occurrences/${filename}`, d3.autoType).then(function (data) {
     // DRAWING SETUP
     let svg = d3.select("#main-container")
@@ -16,8 +16,8 @@ function drawHeatmap(filename) {
             .attr("id", "padding")
             .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-    const groupsX = ["V", "T", "R", "P", "F"];
-    const varsY = ["V", "T", "R", "P", "F"];
+    const groupsX = groups;
+    const varsY = vars;
 
     // title
     svg.append("text")
@@ -46,7 +46,7 @@ function drawHeatmap(filename) {
 
     const colours = d3.scaleSequential()
     .interpolator(d3.interpolateBlues)
-    .domain(d3.extent(data.map((d) => { return d.amount - 1; })));
+    .domain(d3.extent(data.map((d) => { return d[amountName] - 1; })));
 
     // create a tooltip
     const tooltip = d3.select("#main-container")
@@ -70,7 +70,7 @@ function drawHeatmap(filename) {
     }
     const mousemove = function(event, d) {
     tooltip
-      .html(`This sequence appeared</br> <b>${d.amount}</b> time(s)`)
+      .html(`This sequence appeared</br> <b>${d[amountName]}</b> time(s)`)
       .style("left", `${event.x + 20}px`)
       .style("top", `${event.y + 20}px`)
     }
@@ -83,14 +83,14 @@ function drawHeatmap(filename) {
     }
 
     svg.selectAll()
-        .data(data, (d) => { return `${d.group}:${d.variable}` })
+        .data(data, (d) => { return `${d[groupName]}:${d[varsName]}` })
         .enter()
         .append("rect")
-        .attr("x", (d) => { return xAxis(d.group); })
-        .attr("y", (d) => { return yAxis(d.variable); })
+        .attr("x", (d) => { return xAxis(d[groupName]); })
+        .attr("y", (d) => { return yAxis(d[varsName]); })
         .attr("width", xAxis.bandwidth)
         .attr("height", yAxis.bandwidth)
-        .style("fill", (d) => { return colours(d.amount); })
+        .style("fill", (d) => { return colours(d[amountName]); })
         .on("mouseover", mouseover)
         .on("mousemove", mousemove)
         .on("mouseleave", mouseleave);
@@ -98,10 +98,16 @@ function drawHeatmap(filename) {
     });
 }
 
-drawHeatmap("occs_overall.csv")
-drawHeatmap("occs_c1.csv")
-drawHeatmap("occs_c2.csv")
-drawHeatmap("occs_c3.csv")
-drawHeatmap("occs_c4.csv")
-drawHeatmap("occs_c5.csv")
-drawHeatmap("occs_c6.csv")
+const aduGroups = ["V", "T", "P", "R", "F"];
+const aduVars = ["V", "T", "P", "R", "F"];
+const clusterGroups = [1, 2, 3, 4, 5, 6];
+const clusterVars = [1, 2, 3, 4, 5, 6];
+
+drawHeatmap(aduGroups, aduVars, "group", "variable", "amount", "occs_overall.csv")
+drawHeatmap(aduGroups, aduVars, "group", "variable", "amount", "occs_c1.csv")
+drawHeatmap(aduGroups, aduVars, "group", "variable", "amount", "occs_c2.csv")
+drawHeatmap(aduGroups, aduVars, "group", "variable", "amount", "occs_c3.csv")
+drawHeatmap(aduGroups, aduVars, "group", "variable", "amount", "occs_c4.csv")
+drawHeatmap(aduGroups, aduVars, "group", "variable", "amount", "occs_c5.csv")
+drawHeatmap(aduGroups, aduVars, "group", "variable", "amount", "occs_c6.csv")
+drawHeatmap(clusterGroups, clusterVars, "first_cluster", "last_cluster", "amount", "first_last_order.csv")
