@@ -2,7 +2,7 @@ import * as d3 from "d3";
 import {sortByFirstOrLastNode, getOriginalOrder, displayInOriginalOrder, sortByLength} from "./tools"
 
 
-let getData = d3.json("../output/process_2024-01-16_16:45.json").then((response) => {
+let getData = d3.json("../output/process_2024-02-07_16:01.json").then((response) => {
     return response;
 });
 
@@ -28,7 +28,7 @@ function reducePreds(predsList) {
     return predsString;
 }
 
-function buildNodeWindow(pageXY, nodeAdus) {
+function buildNodeWindow(pageXY, nodeAdus, nodeUser) {
     let popup = document.createElement("div");
     popup.className = "adu-popup";
     popup.style.background = "white";
@@ -41,7 +41,8 @@ function buildNodeWindow(pageXY, nodeAdus) {
     popup.style.fontSize = "15px";
     popup.style.left = `${pageXY[0] + 5}px`;
     popup.style.top = `${pageXY[1] + 5}px`;
-    popup.innerText = nodeAdus;
+    popup.innerHTML = `${nodeAdus}</br>
+                       ${nodeUser}`;
 
     let close = document.createElement("div");
     close.style.width = "7px";
@@ -103,6 +104,7 @@ getData.then((data) => {
                 : " node-leaf ") + d.id)
             .attr("transform", d => `translate(${d.x}, ${d.y})`)
             .attr("adu-types", d => reducePreds(d.data.preds))
+            .attr("thread-user", d => `${d.data.user}`)
             .attr("cluster-type", d => `${d.data.cluster_type}`)
             .attr("cluster-number", d => `${d.data.cluster}`)
             .on("click", nodeClick);
@@ -131,7 +133,7 @@ getData.then((data) => {
 
     const nodeClick = function(hoverEvent) {
         let popup = buildNodeWindow([hoverEvent.pageX, hoverEvent.pageY],
-            this.getAttribute("adu-types"));
+            this.getAttribute("adu-types"), this.getAttribute("thread-user"));
 
         document.querySelector("#main-container").appendChild(popup);
     }

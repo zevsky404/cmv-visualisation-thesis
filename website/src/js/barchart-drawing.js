@@ -17,6 +17,7 @@ function drawBarchart(filename, parentElementId) {
         .append("svg")
             .attr("width", width + margin.left + margin.right + 600)
             .attr("height", height + margin.top + margin.bottom + 35)
+            .attr("id", "main-svg")
         .append("g")
             .attr("class", "padding")
             .attr("transform", `translate(${margin.left}, ${margin.top})`);
@@ -60,6 +61,17 @@ function drawBarchart(filename, parentElementId) {
             .attr("height", (d) => { return height - yAxis(d.frequency); })
             .attr("fill", "#1D2B53");
 
+    /*if (filename === "overall.csv") {
+        d3.select("#main-svg").call(d3.zoom()
+            .extent([[0,0], [width, height]])
+            .scaleExtent([1,8])
+            .on("zoom", zoomed));
+
+        function zoomed({transform}) {
+            svg.attr("transform", transform);
+        }
+    }*/
+
     });
 }
 
@@ -69,6 +81,8 @@ function drawPieChart(filename, parentElementId) {
         data.forEach((d) => {
             convertedData[d.adu_type] = +d.amount;
         });
+
+        console.log(convertedData)
 
         const pieWidth = 450, pieHeight = 450, pieMargin = 40;
 
@@ -101,8 +115,6 @@ function drawPieChart(filename, parentElementId) {
         const arcGenerator = d3.arc()
             .innerRadius(0)
             .outerRadius(radius);
-
-        console.log(arcGenerator)
 
         svg.selectAll('pie-data')
           .data(pieData)

@@ -60,7 +60,7 @@ def write_sequence_csv(sequence_dict: dict, name: str):
 
 def count_consecutive_occurrences(preds: list, cluster: int):
     for i in range(len(preds) - 1):
-        cons_occ = "".join([preds[i], preds[i+1]])
+        cons_occ = "".join([preds[i], preds[i + 1]])
         if cons_occ in seen_cons_occurrence_overall:
             seen_cons_occurrence_overall[cons_occ] += 1
         else:
@@ -128,37 +128,49 @@ def write_first_last_cluster_order(first_last_dict: dict, name: str):
         fl_file.close()
 
 
+def fill_person_dict(json):
+    person_dict = {}
+    counter = 1
+    for entry in json:
+        person = entry["author"]
+        if person not in person_dict and entry["parent_id"] is not None:
+            person_dict[person] = f"person_{counter}"
+            counter += 1
+        else:
+            continue
+    return person_dict
+
+
 def process_thread(json_object, add_op=True):
     json_array = []
+    thread_users = fill_person_dict(json_object)
 
     for entry in json_object:
         if entry["id"] in seen_ids:
             continue
         seen_ids.add(entry["id"])
 
-        if entry["parent_id"] is None and not add_op:
+        if entry["parent_id"] is None and not add_op:  # faulty parent id or op not added in this instance
             continue
-        elif entry["parent_id"] is None and entry["cluster_sgt"] is not None:
+        elif entry["parent_id"] is None and entry["cluster_sgt"] is not None:  # everything is correct, OP entry is added
             json_array.append({"id": entry["id"],
                                "cluster_type": "OP",
                                "cluster": int(entry["cluster_sgt"]),
-                               "preds": entry["sequence"]})
-        elif entry["parent_id"] is not None and entry["cluster_sgt"] is not None:
+                               "preds": entry["sequence"],
+                               "user": "OP"})
+        elif entry["parent_id"] is not None and entry["cluster_sgt"] is not None:  # everything is correct, comment entry is added
             json_array.append({"id": entry["id"],
                                "parent_id": entry["parent_id"],
                                "cluster_type": "C",
                                "cluster": int(entry["cluster_sgt"]),
-                               "preds": entry["sequence"]})
-            insert_sequence("".join(eval(entry["sequence"])), int(entry["cluster_sgt"]))
-            count_consecutive_occurrences(eval(entry["sequence"]), int(entry["cluster_sgt"]))
-            count_total_occurrences(eval(entry["preds"]), int(entry["cluster_sgt"]))
+                               "preds": entry["sequence"],
+                               "user": thread_users[entry["author"]]})
+            # insert_sequence("".join(eval(entry["sequence"])), int(entry["cluster_sgt"]))
+            # count_consecutive_occurrences(eval(entry["sequence"]), int(entry["cluster_sgt"]))
+            # count_total_occurrences(eval(entry["preds"]), int(entry["cluster_sgt"]))
 
-    if len(json_object) == 2:
-        count_first_last_cluster_order(str(json_object[1]["cluster_sgt"]),
-                                       "same")
-    else:
-        count_first_last_cluster_order(str(json_object[1]["cluster_sgt"]),
-                                       str(json_object[len(json_object) - 1]["cluster_sgt"]))
+    # count_first_last_cluster_order(str(json_object[1]["cluster_sgt"]),
+    # str(json_object[len(json_object) - 1]["cluster_sgt"]))
     return json_array
 
 
@@ -226,21 +238,22 @@ if __name__ == '__main__':
                 part_array += file_array
         big_array.append(part_array)
 
-    filename = os.path.join(os.getcwd(), "website/output", "process_" + datetime.now().strftime("%Y-%m-%d_%H:%M") + ".json")
+    filename = os.path.join(os.getcwd(), "website/output",
+                            "process_" + datetime.now().strftime("%Y-%m-%d_%H:%M") + ".json")
 
-    # with open(filename, "w") as json_file:
-    #     json_file.write(json.dumps(big_array))
-    #     json_file.close()
+    with open(filename, "w") as json_file:
+        json_file.write(json.dumps(big_array))
+        json_file.close()
 
-    write_total_occurrences(total_occurrences_overall, "total_overall")
-    write_total_occurrences(total_occurrences_c1, "total_c1")
-    write_total_occurrences(total_occurrences_c2, "total_c2")
-    write_total_occurrences(total_occurrences_c3, "total_c3")
-    write_total_occurrences(total_occurrences_c4, "total_c4")
-    write_total_occurrences(total_occurrences_c5, "total_c5")
-    write_total_occurrences(total_occurrences_c6, "total_c6")
-
-    write_first_last_cluster_order(first_last_order_dict, "first_last_order")
+    # write_total_occurrences(total_occurrences_overall, "total_overall")
+    # write_total_occurrences(total_occurrences_c1, "total_c1")
+    # write_total_occurrences(total_occurrences_c2, "total_c2")
+    # write_total_occurrences(total_occurrences_c3, "total_c3")
+    # write_total_occurrences(total_occurrences_c4, "total_c4")
+    # write_total_occurrences(total_occurrences_c5, "total_c5")
+    # write_total_occurrences(total_occurrences_c6, "total_c6")
+    #
+    # write_first_last_cluster_order(first_last_order_dict, "first_last_order")
 
     # write_cons_occurrences(seen_cons_occurrence_overall, "occs_overall")
     # write_cons_occurrences(seen_cons_occurrence_c1, "occs_c1")
@@ -257,5 +270,3 @@ if __name__ == '__main__':
     # write_sequence_csv(seen_sequence_c4, "c4.csv")
     # write_sequence_csv(seen_sequence_c5, "c5.csv")
     # write_sequence_csv(seen_sequence_c6, "c6.csv")
-
-
