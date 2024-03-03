@@ -1,0 +1,14 @@
+group,variable,amount
+R,V,279
+R,F,37
+F,V,310
+V,F,271
+V,R,112
+F,R,44
+P,R,2
+P,F,1
+T,F,2
+V,P,4
+T,V,4
+P,V,2
+V,T,1

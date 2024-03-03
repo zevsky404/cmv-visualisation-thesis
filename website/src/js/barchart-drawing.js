@@ -82,8 +82,6 @@ function drawPieChart(filename, parentElementId) {
             convertedData[d.adu_type] = +d.amount;
         });
 
-        console.log(convertedData)
-
         const pieWidth = 450, pieHeight = 450, pieMargin = 40;
 
         // DRAWING SETUP

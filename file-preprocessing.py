@@ -31,6 +31,12 @@ total_occurrences_c6 = {"Value": 0, "Testimony": 0, "Rhetorical": 0, "Policy": 0
 
 first_last_order_dict = {}
 
+same_occurrences_V = {}
+same_occurrences_T = {}
+same_occurrences_P = {}
+same_occurrences_R = {}
+same_occurrences_F = {}
+
 
 def insert_sequence(sequence: str, cluster: int):
     if sequence in seen_sequence_overall:
@@ -45,17 +51,6 @@ def insert_sequence(sequence: str, cluster: int):
         target_dict[sequence] += 1
     else:
         target_dict[sequence] = 1
-
-
-def write_sequence_csv(sequence_dict: dict, name: str):
-    filename = os.path.join(os.getcwd(), "website/output/sequences", name + ".csv")
-    sorted_dict = dict(sorted(sequence_dict.items(), key=lambda item: item[1], reverse=True))
-
-    with open(filename, "w") as sequence_file:
-        for sequence, frequency in sorted_dict.items():
-            sequence_file.write(f"{sequence},{frequency}")
-            sequence_file.write("\n")
-        sequence_file.close()
 
 
 def count_consecutive_occurrences(preds: list, cluster: int):
@@ -75,16 +70,6 @@ def count_consecutive_occurrences(preds: list, cluster: int):
             target_dict[cons_occ] = 1
 
 
-def write_cons_occurrences(occ_dict: dict, name: str):
-    filename = os.path.join(os.getcwd(), "website/output/occurrences", name + ".csv")
-
-    with open(filename, "w") as occs_file:
-        for occ, amount in occ_dict.items():
-            occs_file.write(f"{occ[0]},{occ[1]},{amount}")
-            occs_file.write("\n")
-        occs_file.close()
-
-
 def count_total_occurrences(comment_adus: list, cluster: int):
     dict_name = f"total_occurrences_c{cluster + 1}"
     target_dict = globals().get(dict_name, None)
@@ -93,16 +78,6 @@ def count_total_occurrences(comment_adus: list, cluster: int):
         new_adu = wordgroup["entity_group"]
         total_occurrences_overall[new_adu] += 1
         target_dict[new_adu] += 1
-
-
-def write_total_occurrences(total_dict: dict, name: str):
-    filename = os.path.join(os.getcwd(), "website/output/occurrences/total", name + ".csv")
-
-    with open(filename, "w") as total_file:
-        for adu_type, amount in total_dict.items():
-            total_file.write(f"{adu_type},{amount}")
-            total_file.write("\n")
-        total_file.close()
 
 
 def count_first_last_cluster_order(first_cluster: str, last_cluster: str):
@@ -116,16 +91,20 @@ def count_first_last_cluster_order(first_cluster: str, last_cluster: str):
         print("Incompatible types because cluster was None, skipped.")
 
 
-def write_first_last_cluster_order(first_last_dict: dict, name: str):
-    filename = os.path.join(os.getcwd(), "website/output/occurrences", name + ".csv")
+def write_dict(rdict: dict, fpath: str, fname: str, first_line: str, sort: bool = False, first_is_composite: bool = False):
+    filename = os.path.join(os.getcwd(), fpath, fname + ".csv")
+    if sort:
+        rdict = dict(sorted(rdict.items(), key=lambda item: item[1], reverse=True))
 
-    with open(filename, "w") as fl_file:
-        fl_file.write("first_cluster,last_cluster,amount")
-        fl_file.write("\n")
-        for order, amount in first_last_dict.items():
-            fl_file.write(f"{order},{amount}")
-            fl_file.write("\n")
-        fl_file.close()
+    with open(filename, "w") as csv_file:
+        csv_file.write(first_line)
+        csv_file.write("\n")
+        for key, value in rdict.items():
+            if first_is_composite:
+                csv_file.write(f"{key[0]},{key[1]},{value}\n")
+            else:
+                csv_file.write(f"{key},{value}\n")
+        csv_file.close()
 
 
 def fill_person_dict(json):
@@ -141,9 +120,37 @@ def fill_person_dict(json):
     return person_dict
 
 
+def count_same_occurrences(preds_dict: dict):
+    adu_string = ""
+    for entry in preds_dict:
+        adu_string += entry["entity_group"][0]
+
+    current_type = ""
+    result = []
+    for adu in adu_string:
+        if not current_type or adu == current_type[-1]:
+            current_type += adu
+        else:
+            result.append((current_type, len(current_type)))
+            current_type = adu
+    result.append((current_type, len(current_type)))
+    return result
+
+
+def insert_same_occurrences(same_letters: list):
+    for entry in same_letters:
+        if entry[1] > 1:
+            target_dict = globals().get(f"same_occurrences_{entry[0][0]}")
+            if entry[0] not in target_dict:
+                target_dict[entry[0]] = 1
+            else:
+                target_dict[entry[0]] += 1
+
+
 def process_thread(json_object, add_op=True):
     json_array = []
     thread_users = fill_person_dict(json_object)
+    same_occurrence_list = []
 
     for entry in json_object:
         if entry["id"] in seen_ids:
@@ -165,12 +172,13 @@ def process_thread(json_object, add_op=True):
                                "cluster": int(entry["cluster_sgt"]),
                                "preds": entry["sequence"],
                                "user": thread_users[entry["author"]]})
-            # insert_sequence("".join(eval(entry["sequence"])), int(entry["cluster_sgt"]))
-            # count_consecutive_occurrences(eval(entry["sequence"]), int(entry["cluster_sgt"]))
-            # count_total_occurrences(eval(entry["preds"]), int(entry["cluster_sgt"]))
+            insert_sequence("".join(eval(entry["sequence"])), int(entry["cluster_sgt"]))
+            count_consecutive_occurrences(eval(entry["sequence"]), int(entry["cluster_sgt"]))
+            count_total_occurrences(eval(entry["preds"]), int(entry["cluster_sgt"]))
+            same_occurrence_list = count_same_occurrences(eval(entry["preds"]))
 
-    # count_first_last_cluster_order(str(json_object[1]["cluster_sgt"]),
-    # str(json_object[len(json_object) - 1]["cluster_sgt"]))
+    insert_same_occurrences(same_occurrence_list)
+    count_first_last_cluster_order(str(json_object[1]["cluster_sgt"]), str(json_object[len(json_object) - 1]["cluster_sgt"]))
     return json_array
 
 
@@ -238,35 +246,33 @@ if __name__ == '__main__':
                 part_array += file_array
         big_array.append(part_array)
 
-    filename = os.path.join(os.getcwd(), "website/output",
-                            "process_" + datetime.now().strftime("%Y-%m-%d_%H:%M") + ".json")
-
-    with open(filename, "w") as json_file:
-        json_file.write(json.dumps(big_array))
-        json_file.close()
-
-    # write_total_occurrences(total_occurrences_overall, "total_overall")
-    # write_total_occurrences(total_occurrences_c1, "total_c1")
-    # write_total_occurrences(total_occurrences_c2, "total_c2")
-    # write_total_occurrences(total_occurrences_c3, "total_c3")
-    # write_total_occurrences(total_occurrences_c4, "total_c4")
-    # write_total_occurrences(total_occurrences_c5, "total_c5")
-    # write_total_occurrences(total_occurrences_c6, "total_c6")
+    # filename = os.path.join(os.getcwd(), "website/output",
+    #                         "process_" + datetime.now().strftime("%Y-%m-%d_%H:%M") + ".json")
     #
-    # write_first_last_cluster_order(first_last_order_dict, "first_last_order")
+    # with open(filename, "w") as json_file:
+    #     json_file.write(json.dumps(big_array))
+    #     json_file.close()
 
-    # write_cons_occurrences(seen_cons_occurrence_overall, "occs_overall")
-    # write_cons_occurrences(seen_cons_occurrence_c1, "occs_c1")
-    # write_cons_occurrences(seen_cons_occurrence_c2, "occs_c2")
-    # write_cons_occurrences(seen_cons_occurrence_c3, "occs_c3")
-    # write_cons_occurrences(seen_cons_occurrence_c4, "occs_c4")
-    # write_cons_occurrences(seen_cons_occurrence_c5, "occs_c5")
-    # write_cons_occurrences(seen_cons_occurrence_c6, "occs_c6")
+    write_dict(total_occurrences_overall, "website/output/occurrences/total", "total_overall", "adu_type,amount")
+    write_dict(seen_sequence_overall, "website/output/sequences", f"overall", "sequence,frequency", True)
+    write_dict(seen_cons_occurrence_overall, "website/output/occurrences", f"occs_overall",
+               "group,variable,amount", False, True)
+    write_dict(first_last_order_dict, "website/output/occurrences", "first_last_order",
+               "first_cluster,last_cluster,amount")
 
-    # write_sequence_csv(seen_sequence_overall, "overall.csv")
-    # write_sequence_csv(seen_sequence_c1, "c1.csv")
-    # write_sequence_csv(seen_sequence_c2, "c2.csv")
-    # write_sequence_csv(seen_sequence_c3, "c3.csv")
-    # write_sequence_csv(seen_sequence_c4, "c4.csv")
-    # write_sequence_csv(seen_sequence_c5, "c5.csv")
-    # write_sequence_csv(seen_sequence_c6, "c6.csv")
+    for i in range(1, 7):
+        total_occurrences = globals().get(f"total_occurrences_c{i}", None)
+        seen_sequence = globals().get(f"seen_sequence_c{i}", None)
+        seen_cons_occurrences = globals().get(f"seen_cons_occurrence_c{i}")
+
+        write_dict(total_occurrences, "website/output/occurrences/total", f"total_c{i}", "adu_type,amount")
+        write_dict(seen_sequence, "website/output/sequences", f"overall_c{i}", "sequence,frequency", True)
+        write_dict(seen_cons_occurrences, "website/output/occurrences", f"occs_c{i}",
+                   "group,variable,amount", False, True)
+
+    for adu_type in ["V", "T", "R", "P", "F"]:
+        ext_sequence = globals().get(f"same_occurrences_{adu_type}")
+        write_dict(ext_sequence, "website/output/ext_sequences", f"ext_sequences_{adu_type}", "sequence,amount")
+
+
+

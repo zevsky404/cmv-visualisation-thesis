@@ -1,0 +1,16 @@
+group,variable,amount
+V,P,119
+P,V,119
+V,T,32
+T,V,29
+T,P,4
+P,T,3
+T,R,3
+R,V,18
+V,R,12
+F,V,5
+P,R,2
+F,R,2
+V,F,5
+F,P,1
+R,P,1

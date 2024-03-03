@@ -1,0 +1,16 @@
+group,variable,amount
+F,V,40
+V,F,38
+V,P,25
+P,F,7
+P,V,47
+R,V,15
+F,P,7
+V,R,16
+R,P,5
+F,R,7
+T,V,1
+R,F,4
+P,R,1
+F,T,4
+T,F,4
