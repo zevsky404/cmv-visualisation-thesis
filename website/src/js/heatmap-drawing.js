@@ -1,6 +1,7 @@
 // CONSTANTS
 import * as d3 from "d3";
 
+
 const margin = {top: 30, right: 30, bottom: 70, left: 60},
     width = 600 - margin.left - margin.right,
     height = 600 - margin.top - margin.bottom;
@@ -104,10 +105,7 @@ const clusterGroups = [1, 2, 3, 4, 5, 6];
 const clusterVars = [1, 2, 3, 4, 5, 6];
 
 drawHeatmap(aduGroups, aduVars, "group", "variable", "amount", "occs_overall.csv")
-drawHeatmap(aduGroups, aduVars, "group", "variable", "amount", "occs_c1.csv")
-drawHeatmap(aduGroups, aduVars, "group", "variable", "amount", "occs_c2.csv")
-drawHeatmap(aduGroups, aduVars, "group", "variable", "amount", "occs_c3.csv")
-drawHeatmap(aduGroups, aduVars, "group", "variable", "amount", "occs_c4.csv")
-drawHeatmap(aduGroups, aduVars, "group", "variable", "amount", "occs_c5.csv")
-drawHeatmap(aduGroups, aduVars, "group", "variable", "amount", "occs_c6.csv")
+for (let i of clusterGroups) {
+    drawHeatmap(aduGroups, aduVars, "group", "variable", "amount", `occs_c${i.toString()}.csv`)
+}
 drawHeatmap(clusterGroups, clusterVars, "first_cluster", "last_cluster", "amount", "first_last_order.csv")

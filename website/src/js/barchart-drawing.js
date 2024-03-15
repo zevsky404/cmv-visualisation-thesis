@@ -6,77 +6,93 @@ const margin = {top: 30, right: 30, bottom: 70, left: 60},
     height = 800 - margin.top - margin.bottom;
 
 
-function drawBarchart(filename, parentElementId) {
-    d3.csv(`../output/sequences/${filename}`, d3.autoType).then( function (data) {
+export function drawBarchart(pathToFile, parentElementId) {
+    d3.csv(pathToFile, d3.autoType).then( function (data) {
+        const pathArray = pathToFile.split("/");
+        const chartTitle = pathArray[pathArray.length - 1];
+        
+        let getAttributeFromXData = (d) => {
+            if (chartTitle.includes("ext_sequences")) {
+                return d.sequence.length.toString();
+            } else {
+                return d.sequence;
+            }
+        };
+        
+        const dataX = data.map((d) => { return getAttributeFromXData(d); });
+        const dataY = d3.extent(data.map((d) => { return d.frequency - 1; }));
 
-    if (filename === "overall.csv") {
-        data = data.slice(0, 100);
-    }
-    // DRAWING SETUP
-    let svg = d3.select(`#${parentElementId}`)
-        .append("svg")
-            .attr("width", width + margin.left + margin.right + 600)
-            .attr("height", height + margin.top + margin.bottom + 35)
-            .attr("id", "main-svg")
-        .append("g")
-            .attr("class", "padding")
-            .attr("transform", `translate(${margin.left}, ${margin.top})`);
+        // DRAWING SETUP
+        let svg = d3.select(`#${parentElementId}`)
+            .append("svg")
+                .attr("width", width + margin.left + margin.right + 600)
+                .attr("height", height + margin.top + margin.bottom + 35)
+                .attr("id", "main-svg")
+            .append("g")
+                .attr("class", "padding")
+                .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-    // title
-    svg.append("text")
-        .attr("x", -20)
-        .attr("y", -7)
-        .attr("text-anchor", "center")
-        .style("font-size", "22px")
-        .text(filename);
+        // title
+        svg.append("text")
+            .attr("x", -20)
+            .attr("y", -7)
+            .attr("text-anchor", "center")
+            .style("font-size", "22px")
+            .text(chartTitle);
 
-    let xAxis = d3.scaleBand()
+        // x axis setup
+        let xAxis = d3.scaleBand()
             .range([0, width + 600])
-            .domain(data.map((d) => { return d.sequence; } ))
+            .domain(dataX)
             .padding(0.4);
 
-    svg.append("g")
-        .attr("transform", `translate(0, ${height})`)
-        .attr("id", "x-axis")
-        .call(d3.axisBottom(xAxis))
-        .selectAll("text")
-            .attr("transform", "translate(-10, 0)rotate(-45)")
-            .style("text-anchor", "end");
+        svg.append("g")
+            .attr("transform", `translate(0, ${height})`)
+            .attr("id", "x-axis")
+            .call(d3.axisBottom(xAxis))
+            .selectAll("text")
+                .attr("transform", "translate(-10, 0)rotate(-45)")
+                .style("text-anchor", "end");
 
-    let yAxis = d3.scaleLinear()
-        .domain(d3.extent(data.map((d) => { return d.frequency - 1; })))
-        .range([height, margin.top]);
+        // y axis setup
+        let yAxis = d3.scaleLinear()
+            .domain(dataY)
+            .range([height, margin.top]);
 
-    svg.append("g")
-        .attr("id", "y-axis")
-        .call(d3.axisLeft(yAxis))
+        svg.append("g")
+            .attr("id", "y-axis")
+            .call(d3.axisLeft(yAxis))
 
-    svg.selectAll("bars")
+        svg.selectAll("bars")
         .data(data)
         .enter()
         .append("rect")
-            .attr("x", (d) => { return xAxis(d.sequence); })
+            .attr("x", (d) => { return xAxis(getAttributeFromXData(d)); })
             .attr("y", (d) => { return yAxis(d.frequency); })
             .attr("width", xAxis.bandwidth())
             .attr("height", (d) => { return height - yAxis(d.frequency); })
             .attr("fill", "#1D2B53");
 
-    /*if (filename === "overall.csv") {
-        d3.select("#main-svg").call(d3.zoom()
-            .extent([[0,0], [width, height]])
-            .scaleExtent([1,8])
-            .on("zoom", zoomed));
-
-        function zoomed({transform}) {
-            svg.attr("transform", transform);
+        if (pathToFile.includes("/overall.csv")) {
+            console.log(true)
+            d3.select("#main-svg").call(d3.zoom()
+                .extent([[margin.left, margin.top], [width - margin.right, height - margin.top]])
+                .scaleExtent([1,8])
+                .on("zoom", zoomed));
         }
-    }*/
 
+        function zoomed(e) {
+            xAxis.range([margin.left, width - margin.right].map(d => e.transform.applyX(d)));
+            svg.selectAll("rect")
+                .attr("x", (d) => { return xAxis(getAttributeFromXData(d)); })
+                .attr("width", xAxis.bandwidth());
+            svg.select("#x-axis").call(d3.axisBottom(xAxis));
+        }
     });
 }
 
-function drawPieChart(filename, parentElementId) {
-    d3.csv(`../output/occurrences/total/${filename}`, d3.autoType).then( function (data) {
+function drawPieChart(pathToFile, parentElementId) {
+    d3.csv(pathToFile, d3.autoType).then( function (data) {
         let convertedData = {};
         data.forEach((d) => {
             convertedData[d.adu_type] = +d.amount;
@@ -93,13 +109,16 @@ function drawPieChart(filename, parentElementId) {
                 .attr("class", "padding")
                 .attr("transform", `translate(${pieWidth/2}, ${pieHeight/2})`);
 
+        const pathArray = pathToFile.split("/");
+        const chartTitle = pathArray[pathArray.length - 1];
+
         // title
         svg.append("text")
             .attr("x", -100)
             .attr("y", -200)
             .attr("text-anchor", "center")
             .style("font-size", "22px")
-            .text(filename);
+            .text(chartTitle);
 
         const radius = Math.min(pieWidth, pieHeight) / 2 - pieMargin;
 
@@ -141,8 +160,8 @@ let promise = new Promise((resolve) => {
     newDiv.className = "combined-data";
     resolve();
 }).then(result => {
-    drawBarchart(`overall.csv`, newDiv.id);
-    drawPieChart(`total_overall.csv`, newDiv.id)
+    drawBarchart(`../output/sequences/overall.csv`, newDiv.id);
+    drawPieChart(`../output/occurrences/total/total_overall.csv`, newDiv.id);
     document.getElementById("main-container").appendChild(newDiv);
 })
 
@@ -154,8 +173,8 @@ for (let i = 1; i <= 6; ++i) {
         newDiv.className = "combined-data";
         resolve();
     }).then(result => {
-        drawBarchart(`c${i}.csv`, newDiv.id);
-        drawPieChart(`total_c${i}.csv`, newDiv.id)
+        drawBarchart(`../output/sequences/c${i}.csv`, newDiv.id);
+        drawPieChart(`../output/occurrences/total/total_c${i}.csv`, newDiv.id)
         document.getElementById("main-container").appendChild(newDiv);
     })
 }

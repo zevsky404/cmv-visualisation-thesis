@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 import shutil
 
+# <editor-fold desc="Global Dictionaries">
 seen_ids = set()
 
 seen_sequence_overall = {}
@@ -36,6 +37,7 @@ same_occurrences_T = {}
 same_occurrences_P = {}
 same_occurrences_R = {}
 same_occurrences_F = {}
+# </editor-fold>
 
 
 def insert_sequence(sequence: str, cluster: int):
@@ -272,7 +274,8 @@ if __name__ == '__main__':
 
     for adu_type in ["V", "T", "R", "P", "F"]:
         ext_sequence = globals().get(f"same_occurrences_{adu_type}")
-        write_dict(ext_sequence, "website/output/ext_sequences", f"ext_sequences_{adu_type}", "sequence,amount")
+        write_dict(ext_sequence, "website/output/ext_sequences", f"ext_sequences_{adu_type}",
+                   "sequence,frequency", True)
 
 
 
