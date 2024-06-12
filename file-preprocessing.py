@@ -1,112 +1,55 @@
-import json
 import os
-from datetime import datetime
-import shutil
+
+import utility as util
 
 # <editor-fold desc="Global Dictionaries">
 seen_ids = set()
 
-seen_sequence_overall = {}
-seen_sequence_c1 = {}
-seen_sequence_c2 = {}
-seen_sequence_c3 = {}
-seen_sequence_c4 = {}
-seen_sequence_c5 = {}
-seen_sequence_c6 = {}
 
-seen_cons_occurrence_overall = {}
-seen_cons_occurrence_c1 = {}
-seen_cons_occurrence_c2 = {}
-seen_cons_occurrence_c3 = {}
-seen_cons_occurrence_c4 = {}
-seen_cons_occurrence_c5 = {}
-seen_cons_occurrence_c6 = {}
 
-total_occurrences_overall = {"Value": 0, "Testimony": 0, "Rhetorical": 0, "Policy": 0, "Fact": 0}
-total_occurrences_c1 = {"Value": 0, "Testimony": 0, "Rhetorical": 0, "Policy": 0, "Fact": 0}
-total_occurrences_c2 = {"Value": 0, "Testimony": 0, "Rhetorical": 0, "Policy": 0, "Fact": 0}
-total_occurrences_c3 = {"Value": 0, "Testimony": 0, "Rhetorical": 0, "Policy": 0, "Fact": 0}
-total_occurrences_c4 = {"Value": 0, "Testimony": 0, "Rhetorical": 0, "Policy": 0, "Fact": 0}
-total_occurrences_c5 = {"Value": 0, "Testimony": 0, "Rhetorical": 0, "Policy": 0, "Fact": 0}
-total_occurrences_c6 = {"Value": 0, "Testimony": 0, "Rhetorical": 0, "Policy": 0, "Fact": 0}
+same_occurrences_V_overall = {}
+same_occurrences_T_overall = {}
+same_occurrences_P_overall = {}
+same_occurrences_R_overall = {}
+same_occurrences_F_overall = {}
 
-first_last_order_dict = {}
+same_occurrences_V_1 = {}
+same_occurrences_T_1 = {}
+same_occurrences_P_1 = {}
+same_occurrences_R_1 = {}
+same_occurrences_F_1 = {}
 
-same_occurrences_V = {}
-same_occurrences_T = {}
-same_occurrences_P = {}
-same_occurrences_R = {}
-same_occurrences_F = {}
+same_occurrences_V_2 = {}
+same_occurrences_T_2 = {}
+same_occurrences_P_2 = {}
+same_occurrences_R_2 = {}
+same_occurrences_F_2 = {}
+
+same_occurrences_V_3 = {}
+same_occurrences_T_3 = {}
+same_occurrences_P_3 = {}
+same_occurrences_R_3 = {}
+same_occurrences_F_3 = {}
+
+same_occurrences_V_4 = {}
+same_occurrences_T_4 = {}
+same_occurrences_P_4 = {}
+same_occurrences_R_4 = {}
+same_occurrences_F_4 = {}
+
+same_occurrences_V_5 = {}
+same_occurrences_T_5 = {}
+same_occurrences_P_5 = {}
+same_occurrences_R_5 = {}
+same_occurrences_F_5 = {}
+
+same_occurrences_V_6 = {}
+same_occurrences_T_6 = {}
+same_occurrences_P_6 = {}
+same_occurrences_R_6 = {}
+same_occurrences_F_6 = {}
+
 # </editor-fold>
-
-
-def insert_sequence(sequence: str, cluster: int):
-    if sequence in seen_sequence_overall:
-        seen_sequence_overall[sequence] += 1
-    else:
-        seen_sequence_overall[sequence] = 1
-
-    dict_name = f"seen_sequence_c{cluster + 1}"
-    target_dict = globals().get(dict_name, None)
-
-    if sequence in target_dict:
-        target_dict[sequence] += 1
-    else:
-        target_dict[sequence] = 1
-
-
-def count_consecutive_occurrences(preds: list, cluster: int):
-    for i in range(len(preds) - 1):
-        cons_occ = "".join([preds[i], preds[i + 1]])
-        if cons_occ in seen_cons_occurrence_overall:
-            seen_cons_occurrence_overall[cons_occ] += 1
-        else:
-            seen_cons_occurrence_overall[cons_occ] = 1
-
-        dict_name = f"seen_cons_occurrence_c{cluster + 1}"
-        target_dict = globals().get(dict_name, None)
-
-        if cons_occ in target_dict:
-            target_dict[cons_occ] += 1
-        else:
-            target_dict[cons_occ] = 1
-
-
-def count_total_occurrences(comment_adus: list, cluster: int):
-    dict_name = f"total_occurrences_c{cluster + 1}"
-    target_dict = globals().get(dict_name, None)
-
-    for wordgroup in comment_adus:
-        new_adu = wordgroup["entity_group"]
-        total_occurrences_overall[new_adu] += 1
-        target_dict[new_adu] += 1
-
-
-def count_first_last_cluster_order(first_cluster: str, last_cluster: str):
-    try:
-        order_name = f"{int(first_cluster) + 1},{int(last_cluster) + 1}"
-        if order_name in first_last_order_dict:
-            first_last_order_dict[order_name] += 1
-        else:
-            first_last_order_dict[order_name] = 1
-    except ValueError:
-        print("Incompatible types because cluster was None, skipped.")
-
-
-def write_dict(rdict: dict, fpath: str, fname: str, first_line: str, sort: bool = False, first_is_composite: bool = False):
-    filename = os.path.join(os.getcwd(), fpath, fname + ".csv")
-    if sort:
-        rdict = dict(sorted(rdict.items(), key=lambda item: item[1], reverse=True))
-
-    with open(filename, "w") as csv_file:
-        csv_file.write(first_line)
-        csv_file.write("\n")
-        for key, value in rdict.items():
-            if first_is_composite:
-                csv_file.write(f"{key[0]},{key[1]},{value}\n")
-            else:
-                csv_file.write(f"{key},{value}\n")
-        csv_file.close()
 
 
 def fill_person_dict(json):
@@ -139,10 +82,10 @@ def count_same_occurrences(preds_dict: dict):
     return result
 
 
-def insert_same_occurrences(same_letters: list):
+def insert_same_occurrences(same_letters: list, cluster: int):
     for entry in same_letters:
         if entry[1] > 1:
-            target_dict = globals().get(f"same_occurrences_{entry[0][0]}")
+            target_dict = globals().get(f"same_occurrences_{entry[0][0]}_{cluster + 1}")
             if entry[0] not in target_dict:
                 target_dict[entry[0]] = 1
             else:
@@ -152,130 +95,104 @@ def insert_same_occurrences(same_letters: list):
 def process_thread(json_object, add_op=True):
     json_array = []
     thread_users = fill_person_dict(json_object)
-    same_occurrence_list = []
 
     for entry in json_object:
+        same_occurrence_list = []
         if entry["id"] in seen_ids:
             continue
         seen_ids.add(entry["id"])
 
         if entry["parent_id"] is None and not add_op:  # faulty parent id or op not added in this instance
             continue
-        elif entry["parent_id"] is None and entry["cluster_sgt"] is not None:  # everything is correct, OP entry is added
+        elif entry["parent_id"] is None and entry[
+            "cluster_sgt"] is not None:  # everything is correct, OP entry is added
             json_array.append({"id": entry["id"],
                                "cluster_type": "OP",
                                "cluster": int(entry["cluster_sgt"]),
                                "preds": entry["sequence"],
                                "user": "OP"})
-        elif entry["parent_id"] is not None and entry["cluster_sgt"] is not None:  # everything is correct, comment entry is added
+        elif (entry["parent_id"] is not None and
+              entry["cluster_sgt"] is not None):  # everything is correct, comment entry is added
             json_array.append({"id": entry["id"],
                                "parent_id": entry["parent_id"],
                                "cluster_type": "C",
                                "cluster": int(entry["cluster_sgt"]),
                                "preds": entry["sequence"],
                                "user": thread_users[entry["author"]]})
-            insert_sequence("".join(eval(entry["sequence"])), int(entry["cluster_sgt"]))
-            count_consecutive_occurrences(eval(entry["sequence"]), int(entry["cluster_sgt"]))
-            count_total_occurrences(eval(entry["preds"]), int(entry["cluster_sgt"]))
             same_occurrence_list = count_same_occurrences(eval(entry["preds"]))
-
-    insert_same_occurrences(same_occurrence_list)
-    count_first_last_cluster_order(str(json_object[1]["cluster_sgt"]), str(json_object[len(json_object) - 1]["cluster_sgt"]))
+            insert_same_occurrences(same_occurrence_list, int(entry["cluster_sgt"]))
     return json_array
 
 
-def organize_files(directory):
-    # Get a list of all files in the directory
-    files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
-
-    # Create a dictionary to store files based on their names
-    file_dict = {}
-
-    # Iterate through each file in the directory
-    for file in files:
-        # Get the base name of the file (excluding extension)
-        full_name, _ = os.path.splitext(file)
-        base_name = full_name.split("_")[0]
-
-        # If the base name is not already a key in the dictionary, create it
-        if base_name not in file_dict:
-            file_dict[base_name] = []
-
-        # Add the current file to the list of files for the base name
-        file_dict[base_name].append(file)
-
-    # Create a new subdirectory to organize files
-    organized_dir = os.path.join(directory, 'organized')
-    os.makedirs(organized_dir, exist_ok=True)
-
-    # Iterate through the dictionary and move files to the new subdirectory
-    for base_name, files_list in file_dict.items():
-        # Create a subdirectory with the base name
-        subdirectory = os.path.join(organized_dir, base_name)
-        os.makedirs(subdirectory, exist_ok=True)
-
-        # Move each file to the corresponding subdirectory
-        for file in files_list:
-            current_path = os.path.join(directory, file)
-            new_path = os.path.join(subdirectory, file)
-            shutil.copyfile(current_path, new_path)
-
-
 if __name__ == '__main__':
-    # directories for thread json files
-    dialogue_directory = os.path.join(os.getcwd(), "data", "dialogue_n")
-    polylogue_directory = os.path.join(os.getcwd(), "data", "polylogue_n")
-    test_directory = os.path.join(os.getcwd(), "data", "test")
+    test_dir = os.path.join(os.getcwd(), "data", "test")
 
-    print(polylogue_directory)
+    dl_dir = os.path.join(os.getcwd(), "data", "dialogue_n")
+    pl_dir = os.path.join(os.getcwd(), "data", "polylogue_n")
 
-    big_array = []
+    dl_nd_dir = os.path.join(os.getcwd(), "data", "dialogue_non-delta")
+    pl_nd_dir = os.path.join(os.getcwd(), "data", "polylogue_non-delta")
 
-    for dir in os.listdir(os.path.join(polylogue_directory, "organized")):
-        indir = os.path.join(polylogue_directory, "organized", dir)
-        part_array = []
-        for index, file in enumerate(os.listdir(indir)):
-            if index == 0:
-                infile = open(os.path.join(indir, file))
-                json_object = [json.loads(jline) for jline in infile.read().splitlines()]
-                # print(json_object)
-                file_array = process_thread(json_object)
-                part_array += file_array
-            else:
-                infile = open(os.path.join(indir, file))
-                json_object = [json.loads(jline) for jline in infile.read().splitlines()]
-                file_array = process_thread(json_object, False)
-                part_array += file_array
-        big_array.append(part_array)
+    # organise files, if necessary
+    util.organize_files(dl_nd_dir)
 
-    # filename = os.path.join(os.getcwd(), "website/output",
-    #                         "process_" + datetime.now().strftime("%Y-%m-%d_%H:%M") + ".json")
+    # initialise a last comment analyser
+    # analyser_array_pl_nd = [
+    #     util.LastCommentsAnalyser(os.path.join(pl_nd_dir, "organized"), 1),
+    #     util.LastCommentsAnalyser(os.path.join(pl_nd_dir, "organized"), 2),
+    #     util.LastCommentsAnalyser(os.path.join(pl_nd_dir, "organized"), 3)
+    # ]
     #
-    # with open(filename, "w") as json_file:
-    #     json_file.write(json.dumps(big_array))
-    #     json_file.close()
+    # analyser_array_dl_nd = [
+    #     util.LastCommentsAnalyser(os.path.join(dl_nd_dir, "organized"), 1),
+    #     util.LastCommentsAnalyser(os.path.join(dl_nd_dir, "organized"), 2),
+    #     util.LastCommentsAnalyser(os.path.join(dl_nd_dir, "organized"), 3)
+    # ]
+    #
+    # analyser_array_pl = [
+    #     util.LastCommentsAnalyser(os.path.join(pl_dir, "organized"), 1),
+    #     util.LastCommentsAnalyser(os.path.join(pl_dir, "organized"), 2),
+    #     util.LastCommentsAnalyser(os.path.join(pl_dir, "organized"), 3)
+    # ]
+    #
+    # analyser_array_dl = [
+    #     util.LastCommentsAnalyser(os.path.join(dl_dir, "organized"), 1),
+    #     util.LastCommentsAnalyser(os.path.join(dl_dir, "organized"), 2),
+    #     util.LastCommentsAnalyser(os.path.join(dl_dir, "organized"), 3)
+    # ]
 
-    write_dict(total_occurrences_overall, "website/output/occurrences/total", "total_overall", "adu_type,amount")
-    write_dict(seen_sequence_overall, "website/output/sequences", f"overall", "sequence,frequency", True)
-    write_dict(seen_cons_occurrence_overall, "website/output/occurrences", f"occs_overall",
-               "group,variable,amount", False, True)
-    write_dict(first_last_order_dict, "website/output/occurrences", "first_last_order",
-               "first_cluster,last_cluster,amount")
+    writer = util.DictionaryWriter()
+    writer.options["composite_element"]["is_composite"] = True
 
-    for i in range(1, 7):
-        total_occurrences = globals().get(f"total_occurrences_c{i}", None)
-        seen_sequence = globals().get(f"seen_sequence_c{i}", None)
-        seen_cons_occurrences = globals().get(f"seen_cons_occurrence_c{i}")
+    # for analyser, step in zip(analyser_array_pl, range(3)):
+    #     analyser.analyse_comments()
+    #     writer.write_to_file(analyser.occurrences, "adu1,adu2,amount",
+    #                          os.path.join(os.getcwd(), "website", "output", "last_comments", "delta"), f"{step}-pl")
+    #
+    # for analyser, step in zip(analyser_array_dl, range(3)):
+    #     analyser.analyse_comments()
+    #     writer.write_to_file(analyser.occurrences, "adu1,adu2,amount",
+    #                          os.path.join(os.getcwd(), "website", "output", "last_comments", "delta"), f"{step}-dl")
+    #
+    # for analyser, step in zip(analyser_array_pl_nd, range(3)):
+    #     analyser.analyse_comments()
+    #     writer.write_to_file(analyser.occurrences, "adu1,adu2,amount",
+    #                          os.path.join(os.getcwd(), "website", "output", "last_comments", "non-delta"), f"{step}-pl")
+    #
+    # for analyser, step in zip(analyser_array_dl_nd, range(3)):
+    #     analyser.analyse_comments()
+    #     writer.write_to_file(analyser.occurrences, "adu1,adu2,amount",
+    #                          os.path.join(os.getcwd(), "website", "output", "last_comments", "non-delta"), f"{step}-dl")
 
-        write_dict(total_occurrences, "website/output/occurrences/total", f"total_c{i}", "adu_type,amount")
-        write_dict(seen_sequence, "website/output/sequences", f"overall_c{i}", "sequence,frequency", True)
-        write_dict(seen_cons_occurrences, "website/output/occurrences", f"occs_c{i}",
-                   "group,variable,amount", False, True)
+    all_sequences = util.AllSequences()
+    all_sequences.insert_sequences()
 
-    for adu_type in ["V", "T", "R", "P", "F"]:
-        ext_sequence = globals().get(f"same_occurrences_{adu_type}")
-        write_dict(ext_sequence, "website/output/ext_sequences", f"ext_sequences_{adu_type}",
-                   "sequence,frequency", True)
+    writer.options["composite_element"]["is_composite"] = False
+    writer.options["sort"] = True
+    writer.write_to_file(all_sequences.all_clusters, "sequence,frequency",
+                         os.path.join(os.getcwd(), "website", "output", "sequences"), "overall_non-delta")
+
+
 
 
 

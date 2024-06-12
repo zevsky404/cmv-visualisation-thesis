@@ -2,7 +2,7 @@ import * as d3 from "d3";
 import {sortByFirstOrLastNode, getOriginalOrder, displayInOriginalOrder, sortByLength} from "./tools"
 
 
-let getData = d3.json("../output/process_2024-02-07_16:01.json").then((response) => {
+let getData = d3.json("../output/process_2024-04-19_17:36.json").then((response) => {
     return response;
 });
 
@@ -154,17 +154,15 @@ getData.then((data) => {
     console.log(`Amount of unsuccessfully drawn trees: ${errorCounter}`);
     const originalOrder = getOriginalOrder();
 
-    let allRadios = document.getElementsByName("clusters");
-    for (let radio of allRadios) {
-        if (radio.id === "length" || radio.id === "none") {
-            continue;
-        }
+    for (let radio of document.getElementsByName("clusters-f")) {
         radio.addEventListener("click", function () {
-            if (this.id.includes("f")) {
-                sortByFirstOrLastNode(parseInt(radio.value), "first");
-            } else if (this.id.includes("l")) {
-                sortByFirstOrLastNode(parseInt(radio.value), "last");
-            }
+            sortByFirstOrLastNode(parseInt(radio.value), "first");
+        });
+    }
+
+    for (let radio of document.getElementsByName("clusters-l")) {
+        radio.addEventListener("click", function () {
+            sortByFirstOrLastNode(parseInt(radio.value), "last")
         });
     }
 
@@ -173,6 +171,22 @@ getData.then((data) => {
 
     let lengthRadio = document.getElementById("length");
     lengthRadio.addEventListener("click", () => sortByLength());
+
+    let forgRadio = document.getElementById("f-comment-org");
+    let lorgRadio = document.getElementById("l-comment-org");
+
+    forgRadio.addEventListener("click", () => {
+        displayInOriginalOrder(originalOrder);
+        lorgRadio.click();
+        noneRadio.click();
+    });
+
+    lorgRadio.addEventListener("click", () => {
+        displayInOriginalOrder(originalOrder);
+        forgRadio.click();
+        noneRadio.click();
+    });
+
 });
 
 

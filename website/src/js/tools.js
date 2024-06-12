@@ -74,3 +74,11 @@ export function displayInOriginalOrder(originalOrder) {
         document.getElementById("main-container").appendChild(item);
     });
 }
+
+export async function createDiv(id, className="combined-data flex flex-wrap") {
+    let div = document.createElement("div");
+    div.id = id;
+    div.className = className;
+    console.log("creating element")
+    return div;
+}

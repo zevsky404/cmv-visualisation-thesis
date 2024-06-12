@@ -16,6 +16,8 @@
         <a href="/barcharts/index.html" class="border-b-2 border-transparent hover:text-gray-800 dark:hover:text-gray-200 hover:border-blue-500 mx-1.5 sm:mx-6">Barcharts</a>
 
         <a href="/heatmaps/index.html" class="border-b-2 border-transparent hover:text-gray-800 dark:hover:text-gray-200 hover:border-blue-500 mx-1.5 sm:mx-6">Heatmaps</a>
+
+        <a href="/heatmap-series/index.html" class="border-b-2 border-transparent hover:text-gray-800 dark:hover:text-gray-200 hover:border-blue-500 mx-1.5 sm:mx-6">Heatmap Series</a>
     </div>
 </nav>
 <!-- sidebar -->
@@ -26,37 +28,43 @@
             <div class="flex flex-col space-y-2 text-lg">
                 <div class="border-b">
                     <a rel="noopener noreferrer" href="#">Sort</a> <br>
-                    <input type="radio" name="clusters" id="none" value="none" checked>
+                    <input type="radio" name="thread-length" id="none" value="none" checked>
                     <label class="text-m" for="none">None</label><br>
-                    <input type="radio" name="clusters" id="length" value="length">
+                    <input type="radio" name="thread-length" id="length" value="length">
                     <label class="text-m" for="length">Length</label><br>
+
                     <div class="text-m">First Node is...</div>
-                    <input class="cluster-radio" type="radio" name="clusters" id="f-comment-1" value="1">
+                    <input class="cluster-radio" type="radio" name="clusters-f" id="f-comment-org" value="org" checked>
+                    <label class="text-sm" for="f-comment-org">Original</label><br>
+                    <input class="cluster-radio" type="radio" name="clusters-f" id="f-comment-1" value="1">
                     <label class="text-sm" for="f-comment-1">Cluster 1</label><br>
-                    <input class="cluster-radio" type="radio" name="clusters" id="f-comment-2" value="2">
+                    <input class="cluster-radio" type="radio" name="clusters-f" id="f-comment-2" value="2">
                     <label class="text-sm" for="f-comment-2">Cluster 2</label><br>
-                    <input class="cluster-radio" type="radio" name="clusters" id="f-comment-3" value="3">
+                    <input class="cluster-radio" type="radio" name="clusters-f" id="f-comment-3" value="3">
                     <label class="text-sm" for="f-comment-3">Cluster 3</label><br>
-                    <input class="cluster-radio" type="radio" name="clusters" id="f-comment-4" value="4">
+                    <input class="cluster-radio" type="radio" name="clusters-f" id="f-comment-4" value="4">
                     <label class="text-sm" for="f-comment-4">Cluster 4</label><br>
-                    <input class="cluster-radio" type="radio" name="clusters" id="f-comment-5" value="5">
+                    <input class="cluster-radio" type="radio" name="clusters-f" id="f-comment-5" value="5">
                     <label class="text-sm" for="f-comment-5">Cluster 5</label><br>
-                    <input class="cluster-radio" type="radio" name="clusters" id="f-comment-6" value="6">
+                    <input class="cluster-radio" type="radio" name="clusters-f" id="f-comment-6" value="6">
                     <label class="text-sm" for="f-comment-6">Cluster 6</label><br>
                 </div>
+
                 <div class="border-b">
                     <div class="text-m">Last Node is...</div>
-                    <input class="cluster-radio" type="radio" name="clusters" id="l-comment-1" value="1">
+                    <input class="cluster-radio" type="radio" name="clusters-l" id="l-comment-org" value="org" checked>
+                    <label class="text-sm" for="l-comment-org">Original</label><br>
+                    <input class="cluster-radio" type="radio" name="clusters-l" id="l-comment-1" value="1">
                     <label class="text-sm" for="l-comment-1">Cluster 1</label><br>
-                    <input class="cluster-radio" type="radio" name="clusters" id="l-comment-2" value="2">
+                    <input class="cluster-radio" type="radio" name="clusters-l" id="l-comment-2" value="2">
                     <label class="text-sm" for="l-comment-2">Cluster 2</label><br>
-                    <input class="cluster-radio" type="radio" name="clusters" id="l-comment-3" value="3">
+                    <input class="cluster-radio" type="radio" name="clusters-l" id="l-comment-3" value="3">
                     <label class="text-sm" for="l-comment-3">Cluster 3</label><br>
-                    <input class="cluster-radio" type="radio" name="clusters" id="l-comment-4" value="4">
+                    <input class="cluster-radio" type="radio" name="clusters-l" id="l-comment-4" value="4">
                     <label class="text-sm" for="l-comment-4">Cluster 4</label><br>
-                    <input class="cluster-radio" type="radio" name="clusters" id="l-comment-5" value="5">
+                    <input class="cluster-radio" type="radio" name="clusters-l" id="l-comment-5" value="5">
                     <label class="text-sm" for="l-comment-5">Cluster 5</label><br>
-                    <input class="cluster-radio" type="radio" name="clusters" id="l-comment-6" value="6">
+                    <input class="cluster-radio" type="radio" name="clusters-l" id="l-comment-6" value="6">
                     <label class="text-sm" for="l-comment-6">Cluster 6</label><br>
                 </div>
             </div>

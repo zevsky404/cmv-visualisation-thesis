@@ -1,4 +1,9 @@
 group,variable,amount
+V,V,0
+T,T,0
+P,P,0
+R,R,0
+F,F,0
 V,P,286
 P,V,284
 V,T,381
