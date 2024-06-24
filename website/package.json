@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"No tests available for this project\" && exit 1",
     "start": "snowpack dev",
-    "tailwind": "npx tailwindcss -i ./src/css/input.css -o ./dist/tailwind_styles.css --watch"
+    "tailwind": "npx tailwindcss -i ./src/css/input.css -o src/css/tailwind_styles.css --watch"
   },
   "author": "Chris",
   "license": "ISC",

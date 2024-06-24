@@ -5,8 +5,6 @@ import utility as util
 # <editor-fold desc="Global Dictionaries">
 seen_ids = set()
 
-
-
 same_occurrences_V_overall = {}
 same_occurrences_T_overall = {}
 same_occurrences_P_overall = {}
@@ -48,6 +46,7 @@ same_occurrences_T_6 = {}
 same_occurrences_P_6 = {}
 same_occurrences_R_6 = {}
 same_occurrences_F_6 = {}
+
 
 # </editor-fold>
 
@@ -124,66 +123,79 @@ def process_thread(json_object, add_op=True):
     return json_array
 
 
-if __name__ == '__main__':
-    test_dir = os.path.join(os.getcwd(), "data", "test")
+def analyse_last_three_comments(pl_nd_dir, dl_nd_dir, pl_dir, dl_dir):
+    writer_composite = util.DictionaryWriter()
+    writer_plain = util.DictionaryWriter()
 
-    dl_dir = os.path.join(os.getcwd(), "data", "dialogue_n")
-    pl_dir = os.path.join(os.getcwd(), "data", "polylogue_n")
+    writer_composite.options["composite_element"]["is_composite"] = True
 
-    dl_nd_dir = os.path.join(os.getcwd(), "data", "dialogue_non-delta")
-    pl_nd_dir = os.path.join(os.getcwd(), "data", "polylogue_non-delta")
+    analyser_array_pl_nd = [
+        util.LastCommentsAnalyser(os.path.join(pl_nd_dir, "organized"), 1),
+        util.LastCommentsAnalyser(os.path.join(pl_nd_dir, "organized"), 2),
+        util.LastCommentsAnalyser(os.path.join(pl_nd_dir, "organized"), 3)
+    ]
 
-    # organise files, if necessary
-    util.organize_files(dl_nd_dir)
+    analyser_array_dl_nd = [
+        util.LastCommentsAnalyser(os.path.join(dl_nd_dir, "organized"), 1),
+        util.LastCommentsAnalyser(os.path.join(dl_nd_dir, "organized"), 2),
+        util.LastCommentsAnalyser(os.path.join(dl_nd_dir, "organized"), 3)
+    ]
 
-    # initialise a last comment analyser
-    # analyser_array_pl_nd = [
-    #     util.LastCommentsAnalyser(os.path.join(pl_nd_dir, "organized"), 1),
-    #     util.LastCommentsAnalyser(os.path.join(pl_nd_dir, "organized"), 2),
-    #     util.LastCommentsAnalyser(os.path.join(pl_nd_dir, "organized"), 3)
-    # ]
-    #
-    # analyser_array_dl_nd = [
-    #     util.LastCommentsAnalyser(os.path.join(dl_nd_dir, "organized"), 1),
-    #     util.LastCommentsAnalyser(os.path.join(dl_nd_dir, "organized"), 2),
-    #     util.LastCommentsAnalyser(os.path.join(dl_nd_dir, "organized"), 3)
-    # ]
-    #
-    # analyser_array_pl = [
-    #     util.LastCommentsAnalyser(os.path.join(pl_dir, "organized"), 1),
-    #     util.LastCommentsAnalyser(os.path.join(pl_dir, "organized"), 2),
-    #     util.LastCommentsAnalyser(os.path.join(pl_dir, "organized"), 3)
-    # ]
-    #
-    # analyser_array_dl = [
-    #     util.LastCommentsAnalyser(os.path.join(dl_dir, "organized"), 1),
-    #     util.LastCommentsAnalyser(os.path.join(dl_dir, "organized"), 2),
-    #     util.LastCommentsAnalyser(os.path.join(dl_dir, "organized"), 3)
-    # ]
+    analyser_array_pl = [
+        util.LastCommentsAnalyser(os.path.join(pl_dir, "organized"), 1),
+        util.LastCommentsAnalyser(os.path.join(pl_dir, "organized"), 2),
+        util.LastCommentsAnalyser(os.path.join(pl_dir, "organized"), 3)
+    ]
 
+    analyser_array_dl = [
+        util.LastCommentsAnalyser(os.path.join(dl_dir, "organized"), 1),
+        util.LastCommentsAnalyser(os.path.join(dl_dir, "organized"), 2),
+        util.LastCommentsAnalyser(os.path.join(dl_dir, "organized"), 3)
+    ]
+
+    for analyser, step in zip(analyser_array_pl, range(3)):
+        analyser.analyse_comments()
+        writer_composite.write_to_file(analyser.occurrences, "adu1,adu2,amount",
+                                       os.path.join(os.getcwd(), "website", "output", "last_comments", "delta"),
+                                       f"{step}-pl")
+        writer_plain.write_to_file(analyser.cluster_amounts, "cluster,amount",
+                                   os.path.join(os.getcwd(), "website", "output", "last_comments", "cluster-amount",
+                                                "delta"),
+                                   f"{step}-cluster-amounts-pl")
+
+    for analyser, step in zip(analyser_array_dl, range(3)):
+        analyser.analyse_comments()
+        writer_composite.write_to_file(analyser.occurrences, "adu1,adu2,amount",
+                                       os.path.join(os.getcwd(), "website", "output", "last_comments", "delta"),
+                                       f"{step}-dl")
+        writer_plain.write_to_file(analyser.cluster_amounts, "cluster,amount",
+                                   os.path.join(os.getcwd(), "website", "output", "last_comments", "cluster-amount",
+                                                "delta"),
+                                   f"{step}-cluster-amounts-dl")
+
+    for analyser, step in zip(analyser_array_pl_nd, range(3)):
+        analyser.analyse_comments()
+        writer_composite.write_to_file(analyser.occurrences, "adu1,adu2,amount",
+                                       os.path.join(os.getcwd(), "website", "output", "last_comments", "non-delta"),
+                                       f"{step}-pl")
+        writer_plain.write_to_file(analyser.cluster_amounts, "cluster,amount",
+                                   os.path.join(os.getcwd(), "website", "output", "last_comments", "cluster-amount",
+                                                "non-delta"),
+                                   f"{step}-cluster-amounts-pl")
+
+    for analyser, step in zip(analyser_array_dl_nd, range(3)):
+        analyser.analyse_comments()
+        writer_composite.write_to_file(analyser.occurrences, "adu1,adu2,amount",
+                                       os.path.join(os.getcwd(), "website", "output", "last_comments", "non-delta"),
+                                       f"{step}-dl")
+        writer_plain.write_to_file(analyser.cluster_amounts, "cluster,amount",
+                                   os.path.join(os.getcwd(), "website", "output", "last_comments", "cluster-amount",
+                                                "non-delta"),
+                                   f"{step}-cluster-amounts-dl")
+
+
+def write_all_sequences():
     writer = util.DictionaryWriter()
-    writer.options["composite_element"]["is_composite"] = True
-
-    # for analyser, step in zip(analyser_array_pl, range(3)):
-    #     analyser.analyse_comments()
-    #     writer.write_to_file(analyser.occurrences, "adu1,adu2,amount",
-    #                          os.path.join(os.getcwd(), "website", "output", "last_comments", "delta"), f"{step}-pl")
-    #
-    # for analyser, step in zip(analyser_array_dl, range(3)):
-    #     analyser.analyse_comments()
-    #     writer.write_to_file(analyser.occurrences, "adu1,adu2,amount",
-    #                          os.path.join(os.getcwd(), "website", "output", "last_comments", "delta"), f"{step}-dl")
-    #
-    # for analyser, step in zip(analyser_array_pl_nd, range(3)):
-    #     analyser.analyse_comments()
-    #     writer.write_to_file(analyser.occurrences, "adu1,adu2,amount",
-    #                          os.path.join(os.getcwd(), "website", "output", "last_comments", "non-delta"), f"{step}-pl")
-    #
-    # for analyser, step in zip(analyser_array_dl_nd, range(3)):
-    #     analyser.analyse_comments()
-    #     writer.write_to_file(analyser.occurrences, "adu1,adu2,amount",
-    #                          os.path.join(os.getcwd(), "website", "output", "last_comments", "non-delta"), f"{step}-dl")
-
     all_sequences = util.AllSequences()
     all_sequences.insert_sequences()
 
@@ -193,6 +205,37 @@ if __name__ == '__main__':
                          os.path.join(os.getcwd(), "website", "output", "sequences"), "overall_non-delta")
 
 
+def write_lengths():
+    pl_lengths = util.LengthAnalyser(pl_dir)
+    pl_nd_lengths = util.LengthAnalyser(pl_nd_dir)
+    dl_lengths = util.LengthAnalyser(dl_dir)
+    dl_nd_lengths = util.LengthAnalyser(dl_nd_dir)
+
+    analyser_list = [pl_lengths, pl_nd_lengths, dl_lengths, dl_nd_lengths]
+
+    writer = util.DictionaryWriter()
+
+    for analyser, category in zip(analyser_list, ["pl", "pl_nd", "dl", "dl_nd"]):
+        writer.write_to_file(analyser.length_categories_relative, "category,amount",
+                             os.path.join(os.getcwd(), "website", "output", "comment-lengths"),
+                             f"{category}-comment-lengths")
 
 
+if __name__ == '__main__':
+    test_dir = os.path.join(os.getcwd(), "data", "test")
+
+    dl_dir = os.path.join(os.getcwd(), "data", "dialogue_n")
+    pl_dir = os.path.join(os.getcwd(), "data", "polylogue_n")
+
+    dl_nd_dir = os.path.join(os.getcwd(), "data", "dialogue_non-delta")
+    pl_nd_dir = os.path.join(os.getcwd(), "data", "polylogue_non-delta")
+
+    # analyse_last_three_comments(pl_nd_dir, dl_nd_dir, pl_dir, dl_dir)
+    # write_all_sequences(writer)
+
+    writer = util.DictionaryWriter()
+    parset_gen = util.ParsetDataGenerator(pl_dir, pl_nd_dir, ["third_last", "second_last", "last", "delta"])
+    parset_gen.setup_dict_list()
+    writer.write_list_to_csv(parset_gen.dict_list, "third_last,second_last,last,delta",
+                             os.path.join(os.getcwd(), "website", "output", "parset_data"), "run-1-full")
 

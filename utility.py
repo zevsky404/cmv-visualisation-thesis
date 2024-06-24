@@ -1,7 +1,8 @@
 import os
 import shutil
 import json
-from datetime import datetime
+import nltk
+import csv
 
 
 def organize_files(directory):
@@ -87,6 +88,21 @@ class DictionaryWriter:
                 else:
                     raise NotImplemented
             csv_file.close()
+
+    def write_list_to_csv(self, inlist: list, first_line: str, path: str, name: str):
+        self.dict = inlist
+        self.first_line = first_line
+        self.fpath = path
+        self.fname = name + self.options['fext']
+        file_path = os.path.join(os.getcwd(), self.fpath, self.fname)
+
+        with open(file_path, 'w', newline="\n") as csvfile:
+            fieldnames = self.first_line.split(",")
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for obj in self.dict:
+                writer.writerow(obj)
+            csvfile.close()
 
 
 class AllSequences:
@@ -268,4 +284,90 @@ class LastCommentsAnalyser:
                 self.cluster_amounts[f"c{comment["cluster"] + 1}"] += 1
 
 
+class LengthAnalyser:
+    def __init__(self, os_path):
+        self.length_categories_absolute = {"<10": 0, "10-50": 0, "50-100": 0, "100-500": 0, "500-1000": 0, ">1000": 0}
+        self.length_categories_relative = {"<10": 0, "10-50": 0, "50-100": 0, "100-500": 0, "500-1000": 0, ">1000": 0}
+        self.iterate_files(os_path)
+        self.turn_relative()
 
+    def get_comment_length(self, comment):
+        tokenised_comment = nltk.word_tokenize(comment)
+        for character in tokenised_comment:
+            if not character.isalnum():
+                tokenised_comment.remove(character)
+
+        if len(tokenised_comment) < 10:
+            self.length_categories_absolute["<10"] += 1
+        elif 10 < len(tokenised_comment) < 50:
+            self.length_categories_absolute["10-50"] += 1
+        elif 50 < len(tokenised_comment) < 100:
+            self.length_categories_absolute["50-100"] += 1
+        elif 100 < len(tokenised_comment) < 500:
+            self.length_categories_absolute["100-500"] += 1
+        elif 500 < len(tokenised_comment) < 1000:
+            self.length_categories_absolute["500-1000"] += 1
+        elif 1000 < len(tokenised_comment):
+            self.length_categories_absolute[">1000"] += 1
+
+    def turn_relative(self):
+        total = 0
+        for [category, amount] in self.length_categories_absolute.items():
+            total += amount
+
+        for [category, amount] in self.length_categories_absolute.items():
+            self.length_categories_relative[category] = amount / total
+
+    def iterate_files(self, os_path):
+        comment_texts = []
+        for file in os.listdir(os_path):
+            if os.path.isdir(os.path.join(os_path, file)):
+                continue
+            else:
+                infile = open(os.path.join(os_path, file))
+                json_object = [json.loads(jline) for jline in infile.read().splitlines()]
+                json_object = json_object[1:]
+                for comment in json_object:
+                    comment_texts.append(comment["text"])
+        for comment_text in comment_texts:
+            self.get_comment_length(comment_text)
+
+
+class ParsetDataGenerator:
+    def __init__(self, d_os_path, nd_os_path, dimensions):
+        self.d_dir = d_os_path
+        self.nd_dir = nd_os_path
+        self.dict_list = []
+        self.dimensions = self.set_dimensions(dimensions)
+
+    def set_dimensions(self, dimensions):
+        if type(dimensions) is str:
+            dim_array = dimensions.split(",")
+            dims = dim_array
+        else:
+            dims = dimensions
+        return dims
+
+    def build_obj_list(self, directory, delta):
+        for file in os.listdir(directory):
+            if os.path.isdir(os.path.join(directory, file)):
+                continue
+            else:
+                infile = open(os.path.join(directory, file))
+                json_object = [json.loads(jline) for jline in infile.read().splitlines()]
+                if len(json_object) < 3:
+                    print("skipped, too short")
+                    continue
+                else:
+                    length = len(json_object)
+                    new_entry = {
+                        self.dimensions[0]: json_object[length - 3]["cluster_sgt"],
+                        self.dimensions[1]: json_object[length - 2]["cluster_sgt"],
+                        self.dimensions[2]: json_object[length - 1]["cluster_sgt"],
+                        self.dimensions[3]: delta
+                    }
+                    self.dict_list.append(new_entry)
+
+    def setup_dict_list(self):
+        self.build_obj_list(self.d_dir, 1)
+        self.build_obj_list(self.nd_dir, 0)

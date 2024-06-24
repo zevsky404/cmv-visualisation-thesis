@@ -81,7 +81,7 @@ export async function drawBarchart(pathToFile, parentElementId,
             console.log(true)
             svg.call(d3.zoom()
                 .extent([[chartMargin.left, chartMargin.top], [chartWidth - chartMargin.right, chartHeight - chartMargin.top]])
-                .scaleExtent([1,8])
+                .scaleExtent([1,12])
                 //.translateExtent([[0,0], [0,0]])
                 .on("zoom", zoomed));
         }
