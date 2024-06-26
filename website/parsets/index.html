@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>r/ChangeMyView Visualisation</title>
-    <script type="module" src="parsets.js"></script>
     <script type="module" src="../src/js/tools.js"></script>
+
     <link href="../src/css/tailwind_styles.css" rel="stylesheet">
+    <link href="../node_modules/d3.parsets/d3.parsets.css" rel="stylesheet">
 </head>
 <body class="max-h-screen overflow-hidden" id="body">
 <!-- top navbar -->
@@ -25,4 +26,24 @@
 </nav>
 <div class="overflow-y-scroll flex flex-wrap" id="main-container" style="max-height: inherit;"></div>
 </body>
+
+<script src='https://d3js.org/d3.v3.min.js'></script>
+<script src="../src/js/parsets-source.js"></script>
+<script type="module">
+    async function buildParset(path, dimensions) {
+        let chart = d3.parsets()
+            .width(1500)
+            .height(800)
+            .dimensions(dimensions);
+
+        let svg = d3.select("#main-container").append("svg")
+            .attr("width", chart.width())
+            .attr("height", chart.height());
+
+        await d3.csv(path, function(error, csv_data) {
+            svg.datum(csv_data).call(chart);
+        });
+    }
+    await buildParset("../output/parset_data/run-1-full.csv", ["third_last", "second_last", "last", "delta"]);
+</script>
 </html>
