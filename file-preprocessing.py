@@ -221,6 +221,27 @@ def write_lengths():
                              f"{category}-comment-lengths")
 
 
+def write_parset_data_pl():
+    writer = util.DictionaryWriter()
+    parset_gen = util.ParsetDataGenerator(pl_dir, pl_nd_dir,
+                                          ["third_last", "second_last", "last", "delta", "third_last_length",
+                                           "second_last_length", "last_length"])
+    parset_gen.setup_dict_list()
+    writer.write_list_to_csv(parset_gen.dict_list, "third_last,second_last,last,delta,third_last_length,second_last_length,last_length",
+                             os.path.join(os.getcwd(), "website", "output", "parset_data"), "run-3-pl")
+
+
+def write_parset_data_dl():
+    writer = util.DictionaryWriter()
+    parset_gen = util.ParsetDataGenerator(dl_dir, dl_nd_dir,
+                                          ["commenter_comment", "op_comment", "last_comment", "delta", "third_last_length",
+                                           "second_last_length", "last_length"])
+    parset_gen.setup_dict_list()
+    writer.write_list_to_csv(parset_gen.dict_list,
+                             "commenter_comment,op_comment,last_comment,delta,third_last_length,second_last_length,last_length",
+                             os.path.join(os.getcwd(), "website", "output", "parset_data"), "run-1-dl")
+
+
 if __name__ == '__main__':
     test_dir = os.path.join(os.getcwd(), "data", "test")
 
@@ -233,9 +254,7 @@ if __name__ == '__main__':
     # analyse_last_three_comments(pl_nd_dir, dl_nd_dir, pl_dir, dl_dir)
     # write_all_sequences(writer)
 
-    writer = util.DictionaryWriter()
-    parset_gen = util.ParsetDataGenerator(pl_dir, pl_nd_dir, ["third_last", "second_last", "last", "delta"])
-    parset_gen.setup_dict_list()
-    writer.write_list_to_csv(parset_gen.dict_list, "third_last,second_last,last,delta",
-                             os.path.join(os.getcwd(), "website", "output", "parset_data"), "run-1-full")
+    write_parset_data_pl()
+
+
 

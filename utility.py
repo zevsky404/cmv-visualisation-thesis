@@ -1,3 +1,4 @@
+import math
 import os
 import shutil
 import json
@@ -60,7 +61,8 @@ class DictionaryWriter:
             "composite_element": {
                 "element": "first",
                 "is_composite": False
-            }
+            },
+            "element_amount": 2
         }
         self.dict = {}
         self.first_line = ""
@@ -232,7 +234,6 @@ class LastCommentsAnalyser:
 
     def process_file(self, jobject):
         json_array = []
-
         for entry in jobject:
             if entry["id"] in self.seen_ids:
                 continue
@@ -284,14 +285,32 @@ class LastCommentsAnalyser:
                 self.cluster_amounts[f"c{comment["cluster"] + 1}"] += 1
 
 
+def get_comment_length(comment):
+    tokenised_comment = nltk.word_tokenize(comment)
+    for character in tokenised_comment:
+        if not character.isalnum():
+            tokenised_comment.remove(character)
+
+    if len(tokenised_comment) < 10:
+        return "<10"
+    elif 10 <= len(tokenised_comment) < 50:
+        return "10-50"
+    elif 50 <= len(tokenised_comment) < 100:
+        return "50-100"
+    elif 100 <= len(tokenised_comment) < 500:
+        return "100-500"
+    elif 500 <= len(tokenised_comment) < 1000:
+        return "500-1000"
+    elif 1000 <= len(tokenised_comment):
+        return ">1000"
+
+
 class LengthAnalyser:
-    def __init__(self, os_path):
+    def __init__(self):
         self.length_categories_absolute = {"<10": 0, "10-50": 0, "50-100": 0, "100-500": 0, "500-1000": 0, ">1000": 0}
         self.length_categories_relative = {"<10": 0, "10-50": 0, "50-100": 0, "100-500": 0, "500-1000": 0, ">1000": 0}
-        self.iterate_files(os_path)
-        self.turn_relative()
 
-    def get_comment_length(self, comment):
+    def write_comment_length_dict(self, comment):
         tokenised_comment = nltk.word_tokenize(comment)
         for character in tokenised_comment:
             if not character.isalnum():
@@ -325,12 +344,15 @@ class LengthAnalyser:
                 continue
             else:
                 infile = open(os.path.join(os_path, file))
-                json_object = [json.loads(jline) for jline in infile.read().splitlines()]
-                json_object = json_object[1:]
-                for comment in json_object:
-                    comment_texts.append(comment["text"])
+                try:
+                    json_object = [json.loads(jline) for jline in infile.read().splitlines()]
+                    json_object = json_object[1:]
+                    for comment in json_object:
+                        comment_texts.append(comment["text"])
+                except json.decoder.JSONDecodeError:
+                    print(os.path.join(os_path, file))
         for comment_text in comment_texts:
-            self.get_comment_length(comment_text)
+            get_comment_length(comment_text)
 
 
 class ParsetDataGenerator:
@@ -354,19 +376,25 @@ class ParsetDataGenerator:
                 continue
             else:
                 infile = open(os.path.join(directory, file))
-                json_object = [json.loads(jline) for jline in infile.read().splitlines()]
-                if len(json_object) < 3:
-                    print("skipped, too short")
-                    continue
-                else:
-                    length = len(json_object)
-                    new_entry = {
-                        self.dimensions[0]: json_object[length - 3]["cluster_sgt"],
-                        self.dimensions[1]: json_object[length - 2]["cluster_sgt"],
-                        self.dimensions[2]: json_object[length - 1]["cluster_sgt"],
-                        self.dimensions[3]: delta
-                    }
-                    self.dict_list.append(new_entry)
+                try:
+                    json_object = [json.loads(jline) for jline in infile.read().splitlines()]
+                    if len(json_object) < 4:
+                        print("skipped, too short")
+                        continue
+                    else:
+                        length = len(json_object)
+                        new_entry = {
+                            self.dimensions[0]: math.trunc(json_object[length - 3]["cluster_sgt"] + 1),
+                            self.dimensions[1]: math.trunc(json_object[length - 2]["cluster_sgt"] + 1),
+                            self.dimensions[2]: math.trunc(json_object[length - 1]["cluster_sgt"] + 1),
+                            self.dimensions[3]: delta,
+                            self.dimensions[4]: get_comment_length(json_object[length - 3]["text"]),
+                            self.dimensions[5]: get_comment_length(json_object[length - 2]["text"]),
+                            self.dimensions[6]: get_comment_length(json_object[length - 1]["text"])
+                        }
+                        self.dict_list.append(new_entry)
+                except json.decoder.JSONDecodeError:
+                    print(os.path.join(directory, file))
 
     def setup_dict_list(self):
         self.build_obj_list(self.d_dir, 1)

@@ -49,3 +49,7 @@
     border: 1px solid #C6CACE;
     box-shadow: 0 1px 2px 0 #1F1E241F;
 }
+
+select {
+    margin: 6rem;
+}
