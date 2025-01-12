@@ -2,7 +2,7 @@ import * as d3 from "d3";
 import {sortByFirstOrLastNode, getOriginalOrder, displayInOriginalOrder, sortByLength} from "./tools"
 
 
-let getData = d3.json("../output/process_2024-04-19_17:36.json").then((response) => {
+let getData = d3.json("../output/process_2024-04-19_17_36.json").then((response) => {
     return response;
 });
 
@@ -152,6 +152,23 @@ getData.then((data) => {
     }
     console.log(`Amount of successfully drawn trees: ${successCounter}`);
     console.log(`Amount of unsuccessfully drawn trees: ${errorCounter}`);
+
+    const legend = d3.select("#legend");
+    legend.selectAll(".circle-placeholder")
+        .append("svg")
+        .style("width", "10")
+        .style("height", "10")
+            .append("circle")
+            .attr("r", "5")
+            .attr("transform", "translate(5,5)")
+            .style("stroke", "black")
+            .style("stroke-width", "1")
+            .style("fill", function () {
+                const parentDiv = this.parentNode.parentNode;
+                const cluster = parseInt(parentDiv.dataset.cluster) - 1;
+                return parentDiv.id.includes("op") ? colorOp(parentDiv.dataset.cluster) : colorComments(parentDiv.dataset.cluster);
+            });
+
     const originalOrder = getOriginalOrder();
 
     for (let radio of document.getElementsByName("clusters-f")) {

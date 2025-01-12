@@ -1,4 +1,5 @@
 import * as d3 from "d3";
+import {sankey, sankeyJustify, sankeyLinkHorizontal} from "d3-sankey";
 
 const margin = {top: 30, right: 30, bottom: 70, left: 60},
     width = 1000 - margin.left - margin.right,
@@ -164,8 +165,8 @@ export async function drawPieChart(pathToFile, parentElementId,
 export async function drawHeatmap(groups, vars, groupName, varsName, amountName, path,
                                   delta = true,
                                   containerId="#main-container",
-                                  chartWidth = 540,
-                                  chartHeight = 540,
+                                  chartWidth = 300,
+                                  chartHeight = 300,
                                   chartMargin = {top: 30, right: 30, bottom: 30, left: 30}) {
     let data = await d3.csv(`${path}`)
     // DRAWING SETUP
@@ -188,7 +189,7 @@ export async function drawHeatmap(groups, vars, groupName, varsName, amountName,
         .attr("x", -20)
         .attr("y", -12)
         .attr("text-anchor", "center")
-        .style("font-size", "22px")
+        .style("font-size", "18px")
         .text(path);
 
     let xAxis = d3.scaleBand()
@@ -219,7 +220,8 @@ export async function drawHeatmap(groups, vars, groupName, varsName, amountName,
     const colours = delta ? deltaColours : nonDeltaColours;
 
     // create a tooltip
-    const tooltip = svg.append("div")
+    let parentContainer = d3.select(containerId)
+    const tooltip = parentContainer.append("div")
         .style("opacity", 0)
         .style("position", "absolute")
         .attr("class", "tooltip")
@@ -227,7 +229,8 @@ export async function drawHeatmap(groups, vars, groupName, varsName, amountName,
         .style("border", "solid")
         .style("border-width", "2px")
         .style("border-radius", "5px")
-        .style("padding", "5px");
+        .style("padding", "5px")
+        .style("font-size", "14px");
 
 
     // Three function that change the tooltip when user hover / move / leave a cell
@@ -260,7 +263,7 @@ export async function drawHeatmap(groups, vars, groupName, varsName, amountName,
             .attr("y", (d) => { return yAxis(d[varsName]); })
             .attr("width", xAxis.bandwidth)
             .attr("height", yAxis.bandwidth)
-            .style("fill", (d) => { return colours(d[amountName]); })
+            .style("fill", (d) => { return d[amountName] != 0 ? colours(d[amountName]) : "#e0dede"; })
             .on("mouseover", mouseover)
             .on("mousemove", mousemove)
             .on("mouseleave", mouseleave);
@@ -324,4 +327,291 @@ export async function drawStackedBar(pathToFile, parentId, barWidth= 600, barHei
         .text(d => `${d.label}: ${d.percentage.toFixed(2)}`);
 
     return svg;
+}
+
+export async function drawHeatmapParset(pathToFile, parentId, lengths = false, setWidth = 1300, setHeight = 700) {
+    const setMargin = {top: 50, right: 100, bottom: 30, left: 30};
+    let dimensions = [];
+    let linksMap = new Map();
+    let nodesMap = new Map();
+
+    const addNode = (name, cluster) => {
+        if (!nodesMap.has(name)) {
+            nodesMap.set(name, {name: name, cluster: cluster});
+        }
+    }
+
+    const addLink = (source, target) => {
+        const linkName = [source, target].join("-->");
+        if (linksMap.has(linkName)) {
+            const linkEntry = linksMap.get(linkName);
+            linkEntry.value += 1;
+        } else {
+            linksMap.set(linkName, {name: linkName, source: source, target: target, value: 1});
+        }
+    }
+
+    let residuals01 = await d3.json("../output/residuals/residuals_0-1-updated.json");
+    let residuals12 = await d3.json("../output/residuals/residuals_1-2-updated.json");
+    let residuals23 = await d3.json("../output/residuals/residuals_2-3-updated.json");
+
+    const getResidualForLink = (link) => {
+        const targetName = link.target.name.split("-");
+        const sourceName = link.source.name.split("-");
+
+        const targetCluster = targetName[0];
+        const targetPosition = targetName[1];
+        const sourceCluster = sourceName[0];
+        const sourcePosition = sourceName[1];
+
+        switch (sourcePosition) {
+            case "third_last":
+                return residuals01[sourceCluster - 1][`residual_to_${targetCluster}`];
+            case "second_last":
+                return residuals12[sourceCluster - 1][`residual_to_${targetCluster}`];
+            case "last":
+                return targetCluster == 0 ? residuals23[sourceCluster - 1]["residual_to_non_delta"] : residuals23[sourceCluster - 1]["residual_to_delta"]
+        }
+    }
+
+    let data = await d3.csv(`${pathToFile}`, function(row) {
+        if (lengths) {
+            dimensions = ["third_last_length", "second_last_length", "last_length", "delta"]
+            for (const dimension of dimensions.slice(0, -1)) {
+                for (const cluster of row[dimension]) {
+                    addNode(`${dimension}_cluster-${cluster}`, cluster)
+                }
+            }
+        } else {
+            dimensions = ["third_last", "second_last", "last", "delta"];
+            const tableLength = row["third_last"].length;
+
+            for (const dimension of dimensions.slice(0, -1)) {
+                for (const cluster of row[dimension]) {
+                    addNode(`${cluster}-${dimension}`, cluster)
+                }
+            }
+            addNode("1-delta", "1");
+            addNode("0-delta", "0");
+
+            const addLinksBetweenAxes = (axis1, axis2) => {
+                for (let i = 0; i < tableLength; ++i) {
+                    addLink(`${row[dimensions[axis1]][i]}-${dimensions[axis1]}`,
+                        `${row[dimensions[axis2]][i]}-${dimensions[axis2]}`);
+                }
+            }
+
+            addLinksBetweenAxes(0,1);
+            addLinksBetweenAxes(1,2);
+            addLinksBetweenAxes(2,3);
+        }
+    });
+
+    // improved link function from: https://observablehq.com/@enjalot/weird-sankey-links
+    function sankeyLinkPath(link) {
+        const offset = -3;
+        let sx = link.source.x1;
+        let tx = link.target.x0 + 1;
+        let sy0 = link.y0 - link.width/2;
+        let sy1 = link.y0 + link.width/2;
+        let ty0 = link.y1 - link.width/2;
+        let ty1 = link.y1 + link.width/2;
+
+        let halfX = (tx - sx)/2;
+
+        let path = d3.path();
+        path.moveTo(sx, sy0);
+
+        let cpx1 = sx + halfX;
+        let cpy1 = sy0 + offset;
+        let cpx2 = sx + halfX;
+        let cpy2 = ty0 - offset;
+        path.bezierCurveTo(cpx1, cpy1, cpx2, cpy2, tx, ty0);
+        path.lineTo(tx, ty1);
+
+        cpx1 = sx + halfX;
+        cpy1 = ty1 - offset;
+        cpx2 = sx + halfX;
+        cpy2 = sy1 + offset;
+        path.bezierCurveTo(cpx1, cpy1, cpx2, cpy2, sx, sy1);
+        path.lineTo(sx, sy0);
+
+        return path.toString();
+    }
+
+    const totalHeight = setHeight + setMargin.bottom + setMargin.top;
+    const totalWidth = setWidth + setMargin.left + setMargin.right;
+
+    let nodes = Array.from(nodesMap.values()).sort((a, b) => d3.ascending(a.name, b.name));
+    let links = Array.from(linksMap.values()).sort((a, b) => d3.ascending(a.name, b.name));
+
+    const svg = d3.select(`#${parentId}`)
+        .append("svg")
+        .attr("width", totalWidth)
+        .attr("height", totalHeight)
+        .append("g")
+        .attr("transform", `translate(${setMargin.left},${setMargin.top})`);
+
+    const defs = svg.append("defs");
+
+    const colourScale = d3.scaleOrdinal()
+        .range(["#4e79a7","#f28e2c","#76b7b2","#edc949","#af7aa1","#bab0ab"])
+        .domain([1, 2, 3, 4, 5, 6])
+
+    const sankeyGenerator = sankey()
+        .nodeId(d => d.name)
+        .nodeWidth(50)
+        .nodePadding(10)
+        .nodeSort(null)
+        .nodeAlign(sankeyJustify)
+        .extent([[0, 0], [setWidth, setHeight]]);
+
+    const { links: sankeyLinks, nodes: sankeyNodes } = sankeyGenerator({
+        links: links.map(d => Object.assign({}, d)),
+        nodes: nodes.map(d => Object.assign({}, d))
+    });
+
+    for (let node of sankeyNodes) {
+        node.color = colourScale(node.cluster);
+    }
+
+    for (let i = 0; i < sankeyLinks.length; ++i) {
+        const currentLink = sankeyLinks[i];
+
+        const gradientId = `gradient-${currentLink.name}-at-${i}`;
+        currentLink.gradientId = gradientId;
+
+        const gradient = defs.append("linearGradient")
+            .attr("id", gradientId)
+            .attr("gradientUnits", "userSpaceOnUse")
+            .attr("x1", currentLink.source.x1)
+            .attr("x2", currentLink.target.x0)
+            .attr("y1", currentLink.source.y0)
+            .attr("y2", currentLink.target.y1);
+
+        gradient.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", currentLink.source.color);
+
+        gradient.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", currentLink.target.color);
+    }
+
+    console.log(sankeyLinks)
+    const paths = svg.append("g")
+        .selectAll("path")
+        .data(sankeyLinks)
+        .enter().append("g")
+        .attr("class", "link-container")
+        .attr("id", d => `${d.name}-container`)
+        .append("path")
+            .attr("class", "link")
+            .attr("id", d => d.name)
+            .attr("d", d => sankeyLinkPath(d))
+            .style("stroke-width", d => Math.max(1, d.width))
+            .style("opacity", 0.8)
+            .style("fill", d =>`url(#${d.gradientId})`);
+
+    const minWidth = 15;
+
+    const linkText = svg.selectAll(".link-container")
+        .data(sankeyLinks)
+        .append("text")
+        .text(d => getResidualForLink(d).toFixed(5))
+        .attr("class", d => d.width > minWidth ? "link-text" : "hidden-link-text")
+        .attr("x", d => d.target.x0 - 10) // Midpoint of the path on the x-axis
+        .attr("y", d => d.y1 - d.width / 2) // Midpoint of the path on the y-axis
+        .attr("dy",  "1rem")
+        .attr("text-anchor", "end")
+        .attr("data-target-node", d => d.target.name)
+        .style("fill", d => getResidualForLink(d) > 0 ? "#699c2c" : "#cc4527")
+        .style("stroke", d => getResidualForLink(d) > 0 ? "#181c14" : "#1c1414")
+        .style("stroke-width", 0.3)
+        .style("font-size", "10");
+
+    const rects = svg.append("g")
+        .selectAll()
+        .data(sankeyNodes)
+        .join("g")
+        .attr("class", "node-rect")
+        .append("rect")
+            .attr("x", d => d.x0)
+            .attr("y", d => d.y0)
+            .attr("height", d => (d.y1 - d.y0))
+            .attr("width", sankeyGenerator.nodeWidth())
+            .style("stroke", "black")
+            .style("stroke-width", 2)
+            .style("fill", d => d.color);
+
+    d3.selectAll(".node-rect")
+        .data(sankeyNodes)
+        .append("text")
+        .text(d => d.name)
+        .attr("dy",  d => d.y1 - d.y0 > 50 ? "-0.3rem" : "0.6rem")
+        .attr("dx", d => d.y1 - d.y0 > 50 ? "0.3rem" : "0.1rem")
+        .style("font-size", 9)
+        .attr("transform", d => d.y1 - d.y0 > 50 ? `translate(${d.x0},${d.y0})rotate(90)` : `translate(${d.x0},${d.y0})`);
+}
+
+
+export async function drawResiduals(pathToFile, parentId, resWidth= 600, resHeight = 700, resMargin = {top: 50, right: 0, bottom: 30, left: 30}) {
+    let data = await d3.json(`${pathToFile}`);
+    const totalHeight = resHeight + margin.bottom + margin.top;
+    const totalWidth = resWidth + margin.left + margin.right;
+
+    let svg = d3.select(`#${parentId}`)
+        .append('svg')
+        .attr("width", totalWidth)
+        .attr("height", totalHeight);
+
+    let singleResiduals = [];
+    for (const residual of data) {
+        for (const attr in residual) {
+            if (attr === "for_cluster") continue;
+            let singleResidual = {
+                "residual_for": `${residual["for_cluster"]}-->${attr.slice(-1)}`,
+                "decimal": residual[attr]
+            };
+            singleResiduals.push(singleResidual);
+        }
+    }
+
+    const allDecimals = singleResiduals.map(d => d.decimal);
+
+    console.log(allDecimals)
+
+    const widthScale = d3.scaleLinear()
+        .domain([d3.min(allDecimals), d3.max(allDecimals)])
+        .range([0, resWidth - 10]);
+
+    const yPlacementScale = d3.scaleBand()
+        .domain(d3.range(allDecimals.length))
+        .range([0, resHeight])
+        .padding(0.5);
+
+
+    svg.selectAll('g')
+        .data(singleResiduals)
+        .enter()
+        .append('g')
+        .attr('class', "res-container")
+        .append('rect')
+            .attr('class', "res-bar")
+            .attr("width", d => Math.abs(widthScale(d.decimal) - widthScale(0)))
+            .attr("height", yPlacementScale.bandwidth())
+            .attr("x", d => d.decimal >= 0 ? width / 2 : widthScale(d.decimal))
+            .attr("y", (d, i) => yPlacementScale(i))
+            .style("fill", d => d.decimal > 0 ? "green" : "red");
+
+    svg.selectAll('.res-container')
+        .data(singleResiduals)
+        .append('text')
+        .text(d => d["residual_for"])
+        .attr("x", d => d.decimal >= 0 ? width / 2 : widthScale(d.decimal))
+        .attr("y", (d, i) => yPlacementScale(i) + yPlacementScale.bandwidth() + 8)
+        .style("font-size", "10px")
+        .style("fill", "black")
+
+
 }

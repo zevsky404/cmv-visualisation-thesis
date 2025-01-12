@@ -342,9 +342,15 @@
           categoryEnter.append("rect")
               .attr("width", function(d) { return d.dx; })
               .attr("y", -20)
-              .attr("height", 20);
+              .attr("height", 210);
           categoryEnter.append("line")
               .style("stroke-width", 2);
+          categoryEnter.append("line")
+              .style("stroke-width", 2)
+              .attr("x2", function(d) { return d.dx; })
+              .attr("y1", -295)
+              .attr("y2", -295)
+              .style("stroke", "gray");
           categoryEnter.append("text")
               .attr("dy", "-.3em");
           category.select("rect")
@@ -532,14 +538,14 @@
     function ribbonPath(d) {
       var s = d.source,
           t = d.target;
-      return ribbonPathString(s.node.x0 + s.x0, s.dimension.y0, s.dx, t.node.x0 + t.x0, t.dimension.y0, t.dx, tension0);
+      return ribbonPathString(s.node.x0 + s.x0, s.dimension.y0 + 190, s.dx, t.node.x0 + t.x0, t.dimension.y0, t.dx, tension0);
     }
 
     // Static path string for mouse handlers.
     function ribbonPathStatic(d) {
       var s = d.source,
           t = d.target;
-      return ribbonPathString(s.node.x + s.x, s.dimension.y, s.dx, t.node.x + t.x, t.dimension.y, t.dx, tension);
+      return ribbonPathString(s.node.x + s.x, s.dimension.y + 190, s.dx, t.node.x + t.x, t.dimension.y, t.dx, tension);
     }
 
     function ribbonPathString(sx, sy, sdx, tx, ty, tdx, tension) {

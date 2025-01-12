@@ -5,13 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>r/ChangeMyView Visualisation</title>
     <script type="module" src="../src/js/tools.js"></script>
-
     <link href="../src/css/tailwind_styles.css" rel="stylesheet">
-    <link href="../node_modules/d3.parsets/d3.parsets.css" rel="stylesheet">
+    <link href="../src/css/site.css" rel="stylesheet">
+    <style>
+        .hidden-link-text {
+            opacity: 0.8;
+            stroke-opacity: 0.5;
+            transition: opacity 0.5s ease;
+        }
+        .hidden-link-text.faded {
+            opacity: 0;
+        }
+    </style>
 </head>
-<body class="max-h-screen overflow-hidden" id="body">
+<body class="h-screen w-screen overflow-y-auto overflow-x-auto" id="body">
 <!-- top navbar -->
-<nav class="bg-white shadow dark:bg-gray-800">
+<nav class="bg-white shadow dark:bg-gray-800 sticky">
     <div class="container flex items-center justify-center p-6 mx-auto text-gray-600 capitalize dark:text-gray-300">
         <a href="/" class="border-b-2 border-transparent hover:text-gray-800 dark:hover:text-gray-200 hover:border-blue-500 mx-1.5 sm:mx-6">Threads/Trees</a>
 
@@ -24,26 +33,50 @@
         <a href="/parsets/index.html" class="text-gray-800 dark:text-gray-200 border-b-2 border-blue-500 mx-1.5 sm:mx-6">Parallel Sets</a>
     </div>
 </nav>
-<div class="overflow-y-scroll flex flex-wrap" id="main-container" style="max-height: inherit;"></div>
+
+<div id="flex-container" class="flex flex-col gap-2">
+    <div id="main-container" class="flex flex-row items-center m-2">
+        <div id="parset-container" class="m-2"></div>
+        <div id="options-container">
+            <input type="checkbox" id="fade-checkbox">
+            <label for="fade-checkbox">Fade Residuals From Small Links</label>
+        </div>
+    </div>
+</div>
+
+
 </body>
-
-<script src='https://d3js.org/d3.v3.min.js'></script>
-<script src="../src/js/parsets-source.js"></script>
 <script type="module">
-    async function buildParset(path, dimensions) {
-        let chart = d3.parsets()
-            .width(1500)
-            .height(800)
-            .dimensions(dimensions);
+    import {drawHeatmap, drawResiduals, drawHeatmapParset} from "../src/js/diagram-draw-functions";
 
-        let svg = d3.select("#main-container").append("svg")
-            .attr("width", chart.width())
-            .attr("height", chart.height());
+    const aduGroups = ["V", "T", "P", "R", "F"];
+    const aduVars = ["V", "T", "P", "R", "F"];
 
-        await d3.csv(path, function(error, csv_data) {
-            svg.datum(csv_data).call(chart);
-        });
+    //let dDlHeatmap =
+    //    await drawHeatmap(aduGroups, aduVars, "adu1", "adu2", "amount", `../output/last_comments/delta/0-dl.csv`, true, "#parset-container", 200, 200);
+
+    //let rect = document.getElementsByClassName("category")[0];
+    //rect.insertBefore(dDlHeatmap.node(), rect.children[0])
+
+    await drawHeatmapParset("../output/parset_data/run-3-pl.csv", "parset-container");
+
+    const allNodes = document.querySelectorAll("rect");
+
+    for (let node of allNodes) {
+        const nodeName = node.__data__.name;
+        const nodePosition = node.__data__.name.split("-")[1];
+        if (nodePosition !== "third_last") {
+            node.addEventListener("click", () => {
+                const linkTexts = document.querySelectorAll(`text[data-target-node="${nodeName}"]`);
+                linkTexts.forEach((text) => { if (text.style.display === "") text.style.display = "none"; else text.style.display = "" });
+                node.style.opacity === 1 ? node.style.opacity = 0.7 : node.style.opacity = 1;
+            })
+        }
     }
-    await buildParset("../output/parset_data/run-1-full.csv", ["third_last", "second_last", "last", "delta"]);
+
+    document.getElementById("fade-checkbox").addEventListener("change", () => {
+        let linkTexts = document.getElementsByClassName("hidden-link-text");
+        for (let text of linkTexts) text.classList.toggle("faded");
+    })
 </script>
 </html>
