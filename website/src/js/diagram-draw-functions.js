@@ -1,5 +1,4 @@
 import * as d3 from "d3";
-import {sankey, sankeyJustify, sankeyLinkHorizontal} from "d3-sankey";
 
 const margin = {top: 30, right: 30, bottom: 70, left: 60},
     width = 1000 - margin.left - margin.right,
@@ -518,17 +517,25 @@ export async function drawHeatmapParset(pathToFile, parentId, lengths = false, s
     const linkText = svg.selectAll(".link-container")
         .data(sankeyLinks)
         .append("text")
-        .text(d => getResidualForLink(d).toFixed(5))
-        .attr("class", d => d.width > minWidth ? "link-text" : "hidden-link-text")
-        .attr("x", d => d.target.x0 - 10) // Midpoint of the path on the x-axis
-        .attr("y", d => d.y1 - d.width / 2) // Midpoint of the path on the y-axis
-        .attr("dy",  "1rem")
-        .attr("text-anchor", "end")
-        .attr("data-target-node", d => d.target.name)
-        .style("fill", d => getResidualForLink(d) > 0 ? "#699c2c" : "#cc4527")
-        .style("stroke", d => getResidualForLink(d) > 0 ? "#181c14" : "#1c1414")
-        .style("stroke-width", 0.3)
-        .style("font-size", "10");
+            .text(d => getResidualForLink(d).toFixed(4))
+            .attr("class", d => d.width > minWidth ? "link-text" : "hidden-link-text")
+            .attr("x", d => d.target.x0 - 10) // Midpoint of the path on the x-axis
+            .attr("y", d => d.y1 - d.width / 2) // Midpoint of the path on the y-axis
+            .attr("dy",  "1rem")
+            .attr("text-anchor", "end")
+            .attr("data-target-node", d => d.target.name)
+            .style("fill", d => getResidualForLink(d) > 0 ? "#699c2c" : "#cc4527")
+            .style("stroke", d => getResidualForLink(d) > 0 ? "#181c14" : "#1c1414")
+            .style("stroke-width", 0.3)
+            .style("font-size", "10")
+            .on("mouseover", function(event, d) {
+                let infoBox = document.getElementById("residual-information");
+                infoBox.innerText = `${d.name}: ${this.innerHTML}`;
+                getResidualForLink(d) > 0 ? infoBox.classList.add("text-green-900") : infoBox.classList.add("text-red-900");
+            })
+            .on("mouseout", function(event, d) {
+                 document.getElementById("residual-information").innerText = "";
+            });
 
     const rects = svg.append("g")
         .selectAll()
