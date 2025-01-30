@@ -1,5 +1,4 @@
 import * as d3 from "d3";
-import {sankey, sankeyJustify, sankeyLinkHorizontal} from "d3-sankey";
 
 const margin = {top: 30, right: 30, bottom: 70, left: 60},
     width = 1000 - margin.left - margin.right,
@@ -165,8 +164,8 @@ export async function drawPieChart(pathToFile, parentElementId,
 export async function drawHeatmap(groups, vars, groupName, varsName, amountName, path,
                                   delta = true,
                                   containerId="#main-container",
-                                  chartWidth = 540,
-                                  chartHeight = 540,
+                                  chartWidth = 300,
+                                  chartHeight = 300,
                                   chartMargin = {top: 30, right: 30, bottom: 30, left: 30}) {
     let data = await d3.csv(`${path}`)
     // DRAWING SETUP
@@ -189,7 +188,7 @@ export async function drawHeatmap(groups, vars, groupName, varsName, amountName,
         .attr("x", -20)
         .attr("y", -12)
         .attr("text-anchor", "center")
-        .style("font-size", "22px")
+        .style("font-size", "18px")
         .text(path);
 
     let xAxis = d3.scaleBand()
@@ -220,7 +219,8 @@ export async function drawHeatmap(groups, vars, groupName, varsName, amountName,
     const colours = delta ? deltaColours : nonDeltaColours;
 
     // create a tooltip
-    const tooltip = svg.append("div")
+    let parentContainer = d3.select(containerId)
+    const tooltip = parentContainer.append("div")
         .style("opacity", 0)
         .style("position", "absolute")
         .attr("class", "tooltip")
@@ -228,7 +228,8 @@ export async function drawHeatmap(groups, vars, groupName, varsName, amountName,
         .style("border", "solid")
         .style("border-width", "2px")
         .style("border-radius", "5px")
-        .style("padding", "5px");
+        .style("padding", "5px")
+        .style("font-size", "14px");
 
 
     // Three function that change the tooltip when user hover / move / leave a cell
@@ -261,7 +262,7 @@ export async function drawHeatmap(groups, vars, groupName, varsName, amountName,
             .attr("y", (d) => { return yAxis(d[varsName]); })
             .attr("width", xAxis.bandwidth)
             .attr("height", yAxis.bandwidth)
-            .style("fill", (d) => { return colours(d[amountName]); })
+            .style("fill", (d) => { return d[amountName] != 0 ? colours(d[amountName]) : "#e0dede"; })
             .on("mouseover", mouseover)
             .on("mousemove", mousemove)
             .on("mouseleave", mouseleave);

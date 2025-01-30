@@ -1,4 +1,9 @@
 group,variable,amount
+V,V,0
+T,T,0
+P,P,0
+R,R,0
+F,F,0
 V,R,233
 V,T,87
 T,V,137
@@ -15,3 +20,7 @@ R,P,1
 T,F,3
 F,T,1
 R,F,1
+P,T,0
+P,F,0
+T,P,0
+F,P,0

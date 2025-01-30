@@ -7,7 +7,7 @@
     <script type="module" src="./src/js/tools.js"></script>
     <link href="src/css/tailwind_styles.css" rel="stylesheet">
 </head>
-<body class="" id="body">
+<body class="overflow-hidden" id="body">
 <!-- top navbar -->
 <nav class="bg-white shadow dark:bg-gray-800 sticky">
     <div class="container flex items-center justify-center p-6 mx-auto text-gray-600 capitalize dark:text-gray-300">
@@ -26,15 +26,86 @@
 <div class="float-left p-6 min-w-0 sm:w-60 dark:bg-gray-800 text-gray-300 h-screen" style="min-width: 250px;">
     <nav class="space-y-8 text-sm">
         <div class="space-y-2">
+            <h2 class="text-xl font-semibold tracking uppercase">Legend</h2>
+            <div class="flex flex-col space-y-2 text-lg" id="legend">
+                <a rel="noopener noreferrer" href="#">OP Cluster</a>
+                <div class="flex flex-row items-center space-x-1">
+                    <div class="circle-placeholder" id="op-1" data-cluster="0"></div>
+                    <div class="text-sm">Cluster 1</div>
+                </div>
+                <div class="flex flex-row items-center space-x-1">
+                    <div class="circle-placeholder" id="op-2" data-cluster="1"></div>
+                    <div class="text-sm">Cluster 2</div>
+                </div>
+                <div class="flex flex-row items-center space-x-1">
+                    <div class="circle-placeholder" id="op-3" data-cluster="2"></div>
+                    <div class="text-sm">Cluster 3</div>
+                </div>
+                <div class="flex flex-row items-center space-x-1">
+                    <div class="circle-placeholder" id="op-4" data-cluster="3"></div>
+                    <div class="text-sm">Cluster 4</div>
+                </div>
+                <div class="flex flex-row items-center space-x-1">
+                    <div class="circle-placeholder" id="op-5" data-cluster="4"></div>
+                    <div class="text-sm">Cluster 5</div>
+                </div>
+                <div class="flex flex-row items-center space-x-1">
+                    <div class="circle-placeholder" id="op-6" data-cluster="5"></div>
+                    <div class="text-sm">Cluster 6</div>
+                </div>
+                <div class="flex flex-row items-center space-x-1">
+                    <div class="circle-placeholder" id="op-7" data-cluster="6"></div>
+                    <div class="text-sm">Cluster 7</div>
+                </div>
+                <div class="flex flex-row items-center space-x-1">
+                    <div class="circle-placeholder" id="op-8" data-cluster="7"></div>
+                    <div class="text-sm">Cluster 8</div>
+                </div>
+                <div class="flex flex-row items-center space-x-1">
+                    <div class="circle-placeholder" id="op-9" data-cluster="8"></div>
+                    <div class="text-sm">Cluster 9</div>
+                </div>
+                <div class="flex flex-row items-center space-x-1">
+                    <div class="circle-placeholder" id="op-10" data-cluster="9"></div>
+                    <div class="text-sm">Cluster 10</div>
+                </div>
+
+                <a rel="noopener noreferrer" href="#">Comment Cluster</a>
+                 <div class="flex flex-row items-center space-x-1">
+                    <div class="circle-placeholder" id="comment-1" data-cluster="0"></div>
+                    <div class="text-sm">Cluster 1</div>
+                </div>
+                <div class="flex flex-row items-center space-x-1">
+                    <div class="circle-placeholder" id="comment-2" data-cluster="1"></div>
+                    <div class="text-sm">Cluster 2</div>
+                </div>
+                <div class="flex flex-row items-center space-x-1">
+                    <div class="circle-placeholder" id="comment-3" data-cluster="2"></div>
+                    <div class="text-sm">Cluster 3</div>
+                </div>
+                <div class="flex flex-row items-center space-x-1">
+                    <div class="circle-placeholder" id="comment-4" data-cluster="3"></div>
+                    <div class="text-sm">Cluster 4</div>
+                </div>
+                <div class="flex flex-row items-center space-x-1">
+                    <div class="circle-placeholder" id="comment-5" data-cluster="4"></div>
+                    <div class="text-sm">Cluster 5</div>
+                </div>
+                <div class="flex flex-row items-center space-x-1">
+                    <div class="circle-placeholder" id="comment-6" data-cluster="5"></div>
+                    <div class="text-sm">Cluster 6</div>
+                </div>
+            </div>
             <h2 class="text-xl font-semibold tracking uppercase">Tools</h2>
             <div class="flex flex-col space-y-2 text-lg">
-                <div class="border-b">
+                <div class="border-b m-2">
                     <a rel="noopener noreferrer" href="#">Sort</a> <br>
                     <input type="radio" name="thread-length" id="none" value="none" checked>
-                    <label class="text-m" for="none">None</label><br>
+                    <label class="text-sm" for="none">None</label><br>
                     <input type="radio" name="thread-length" id="length" value="length">
-                    <label class="text-m" for="length">Length</label><br>
-
+                    <label class="text-sm" for="length">Length</label><br>
+                </div>
+                <div class="border-b m-2">
                     <div class="text-m">First Node is...</div>
                     <input class="cluster-radio" type="radio" name="clusters-f" id="f-comment-org" value="org" checked>
                     <label class="text-sm" for="f-comment-org">Original</label><br>
@@ -52,7 +123,7 @@
                     <label class="text-sm" for="f-comment-6">Cluster 6</label><br>
                 </div>
 
-                <div class="border-b">
+                <div class="border-b m-2">
                     <div class="text-m">Last Node is...</div>
                     <input class="cluster-radio" type="radio" name="clusters-l" id="l-comment-org" value="org" checked>
                     <label class="text-sm" for="l-comment-org">Original</label><br>
@@ -74,7 +145,7 @@
     </nav>
 </div>
 
-<div class="overflow-y-scroll" id="main-container" style="max-height: inherit;"></div>
+<div class="overflow-y-auto" id="main-container" style="max-height: 93vh"></div>
 
 </body>
 </html>
