@@ -16,7 +16,7 @@ document.getElementById("main-container").appendChild(newDiv)
 
 for (let i = 1; i <= 6; ++i) {
     let newDiv = await createDiv(`data-cluster-${i}`).then(async result => {
-        let barchart = await drawBarchart(`../output/sequences/c${i}.csv`, result.id);
+        let barchart = await drawBarchart(`../output/sequences/c${i}.csv`, result.id, 1100);
         let pieChart = await drawPieChart(`../output/occurrences/total/total_c${i}.csv`, result.id)
         result.appendChild(barchart.node());
         result.appendChild(pieChart.node());

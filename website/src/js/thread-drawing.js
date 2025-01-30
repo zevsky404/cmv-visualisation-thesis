@@ -2,7 +2,7 @@ import * as d3 from "d3";
 import {sortByFirstOrLastNode, getOriginalOrder, displayInOriginalOrder, sortByLength} from "./tools"
 
 
-let getData = d3.json("../output/process_2024-04-19_17:36.json").then((response) => {
+let getData = d3.json("../output/process_2024-04-19_17_36.json").then((response) => {
     return response;
 });
 

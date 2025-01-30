@@ -4,7 +4,7 @@ import shutil
 import json
 import nltk
 import csv
-
+nltk.download('punkt')
 
 def organize_files(directory):
     """

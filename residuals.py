@@ -205,28 +205,45 @@ class Residuals:
                 self.counter_5["transitions_incoming_total"],
                 self.counter_6["transitions_incoming_total"]
                ])
+            print(all_second_axis_transitions)
 
             for cluster in range(1, 7):
                 residual = {
                     "for_cluster": cluster,
 
                     "residual_to_1": (self.get_counter(cluster)["transitions_to_cluster"]["1"] / self.get_counter(cluster)["transitions_outgoing_total"]) -
-                                     (self.get_counter(cluster)["transitions_incoming_total"] / all_second_axis_transitions),
+                                     (self.counter_1["transitions_incoming_total"] / all_second_axis_transitions),
+                    "fraction_to_1": (self.get_counter(cluster)["transitions_to_cluster"]["1"] / self.get_counter(cluster)["transitions_outgoing_total"]),
 
                     "residual_to_2": (self.get_counter(cluster)["transitions_to_cluster"]["2"] / self.get_counter(cluster)["transitions_outgoing_total"]) -
-                                     (self.get_counter(cluster)["transitions_incoming_total"] / all_second_axis_transitions),
+                                     (self.counter_2["transitions_incoming_total"] / all_second_axis_transitions),
+                    "fraction_to_2": (
+                                self.get_counter(cluster)["transitions_to_cluster"]["2"] / self.get_counter(cluster)[
+                            "transitions_outgoing_total"]),
 
                     "residual_to_3": (self.get_counter(cluster)["transitions_to_cluster"]["3"] / self.get_counter(cluster)["transitions_outgoing_total"]) -
-                                     (self.get_counter(cluster)["transitions_incoming_total"] / all_second_axis_transitions),
+                                     (self.counter_3["transitions_incoming_total"] / all_second_axis_transitions),
+                    "fraction_to_3": (
+                                self.get_counter(cluster)["transitions_to_cluster"]["3"] / self.get_counter(cluster)[
+                            "transitions_outgoing_total"]),
 
                     "residual_to_4": (self.get_counter(cluster)["transitions_to_cluster"]["4"] / self.get_counter(cluster)["transitions_outgoing_total"]) -
-                                     (self.get_counter(cluster)["transitions_incoming_total"] / all_second_axis_transitions),
+                                     (self.counter_4["transitions_incoming_total"] / all_second_axis_transitions),
+                    "fraction_to_4": (
+                                self.get_counter(cluster)["transitions_to_cluster"]["4"] / self.get_counter(cluster)[
+                            "transitions_outgoing_total"]),
 
                     "residual_to_5": (self.get_counter(cluster)["transitions_to_cluster"]["5"] / self.get_counter(cluster)["transitions_outgoing_total"]) -
-                                     (self.get_counter(cluster)["transitions_incoming_total"] / all_second_axis_transitions),
+                                     (self.counter_5["transitions_incoming_total"] / all_second_axis_transitions),
+                    "fraction_to_5": (
+                                self.get_counter(cluster)["transitions_to_cluster"]["5"] / self.get_counter(cluster)[
+                            "transitions_outgoing_total"]),
 
                     "residual_to_6": (self.get_counter(cluster)["transitions_to_cluster"]["6"] / self.get_counter(cluster)["transitions_outgoing_total"]) -
-                                     (self.get_counter(cluster)["transitions_incoming_total"] / all_second_axis_transitions),
+                                     (self.counter_6["transitions_incoming_total"] / all_second_axis_transitions),
+                    "fraction_to_6": (
+                                self.get_counter(cluster)["transitions_to_cluster"]["6"] / self.get_counter(cluster)[
+                            "transitions_outgoing_total"]),
                 }
                 all_residuals.append(residual)
         else:
@@ -234,6 +251,7 @@ class Residuals:
                 self.counter_delta["transitions_incoming_total"],
                 self.counter_non_delta["transitions_incoming_total"]
             ])
+            print(delta_axis_transitions)
 
             for cluster in range(1, 7):
                 residual = {
@@ -241,13 +259,15 @@ class Residuals:
 
                     "residual_to_delta": (self.get_counter(cluster)["transitions_to_cluster"]["0"] /
                                           self.get_counter(cluster)["transitions_outgoing_total"]) -
-                                         (self.get_counter(cluster)[
-                                              "transitions_incoming_total"] / delta_axis_transitions),
+                                         (self.counter_delta["transitions_incoming_total"] / delta_axis_transitions),
+                    "fraction_to_delta": (self.get_counter(cluster)["transitions_to_cluster"]["0"] /
+                                          self.get_counter(cluster)["transitions_outgoing_total"]),
 
                     "residual_to_non_delta": (self.get_counter(cluster)["transitions_to_cluster"]["-1"] /
                                               self.get_counter(cluster)["transitions_outgoing_total"]) -
-                                             (self.get_counter(cluster)[
-                                                  "transitions_incoming_total"] / delta_axis_transitions)
+                                             (self.counter_non_delta["transitions_incoming_total"] / delta_axis_transitions),
+                    "fraction_to_non_delta": (self.get_counter(cluster)["transitions_to_cluster"]["-1"] /
+                                          self.get_counter(cluster)["transitions_outgoing_total"]),
                 }
                 all_residuals.append(residual)
 
@@ -261,7 +281,7 @@ def get_file_path(output_dir, filename):
 
 
 if __name__ == '__main__':
-    path = get_file_path("parset_data", "run-3-pl.csv")
-    axis_2_3 = Residuals("residuals_1-3-updated.json")
-    axis_2_3.fill_counter(path, 1, 3, True)
+    path = get_file_path("parset_data", "run-2-dl.csv")
+    axis_2_3 = Residuals("residuals_2-3-updated-dl.json")
+    axis_2_3.fill_counter(path, 2, 3, True)
     axis_2_3.calculate_residuals(True)

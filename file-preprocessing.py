@@ -239,7 +239,7 @@ def write_parset_data_dl():
     parset_gen.setup_dict_list()
     writer.write_list_to_csv(parset_gen.dict_list,
                              "commenter_comment,op_comment,last_comment,delta,third_last_length,second_last_length,last_length",
-                             os.path.join(os.getcwd(), "website", "output", "parset_data"), "run-1-dl")
+                             os.path.join(os.getcwd(), "website", "output", "parset_data"), "run-2-dl")
 
 
 if __name__ == '__main__':
@@ -254,7 +254,7 @@ if __name__ == '__main__':
     # analyse_last_three_comments(pl_nd_dir, dl_nd_dir, pl_dir, dl_dir)
     # write_all_sequences(writer)
 
-    write_parset_data_pl()
+    write_parset_data_dl()
 
 
 

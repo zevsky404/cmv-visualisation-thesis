@@ -12,7 +12,6 @@ export async function drawBarchart(pathToFile, parentElementId,
     let data = await d3.csv(pathToFile, d3.autoType);
     const pathArray = pathToFile.split("/");
     const chartTitle = pathArray[pathArray.length - 1];
-    console.log("function executed")
 
         let getAttributeFromXData = (d) => {
             if (chartTitle.includes("ext_sequences")) {
@@ -23,6 +22,7 @@ export async function drawBarchart(pathToFile, parentElementId,
         };
 
         const dataX = data.map((d) => { return getAttributeFromXData(d); });
+        //console.log(`cluster: ${chartTitle} - amount sequences: ${dataX.length}`);
         const dataY = d3.extent(data.map((d) => { return  d.frequency; }));
 
         chartWidth = chartWidth - chartMargin.left - chartMargin.right;

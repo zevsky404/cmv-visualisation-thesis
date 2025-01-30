@@ -48,7 +48,7 @@
 
 </body>
 <script type="module">
-    import {drawHeatmap, drawResiduals, drawHeatmapParset} from "../src/js/diagram-draw-functions";
+    import {drawHeatmapParset} from "../src/js/diagram-draw-functions";
 
     const aduGroups = ["V", "T", "P", "R", "F"];
     const aduVars = ["V", "T", "P", "R", "F"];
@@ -60,6 +60,7 @@
     //rect.insertBefore(dDlHeatmap.node(), rect.children[0])
 
     await drawHeatmapParset("../output/parset_data/run-3-pl.csv", "parset-container");
+    // await drawHeatmapParset("../output/parset_data/run-2-dl.csv", "parset-container");
 
     const allNodes = document.querySelectorAll("rect");
 
